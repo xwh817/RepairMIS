@@ -1,8 +1,9 @@
 import React from 'react';
-
 import {
     Select, Table, Icon, Button, message, Input, Modal
 } from 'antd';
+import ApiUtil from '../Utils/ApiUtil';
+import HttpUtil from '../Utils/HttpUtil';
 
 
 export default class DeviceParts extends React.Component {
@@ -28,45 +29,68 @@ export default class DeviceParts extends React.Component {
         title: '编辑',
         align: 'center',
         width: 160,
-        render: (job) => (
+        render: (currentItem) => (
             <span>
-                <Icon type="edit" title="编辑" onClick={() => this.showUpdateDialog(job)} />
-                <Icon type="close" title="删除" style={{ color: '#ee6633', marginLeft: 12 }} onClick={() => this.deleteConfirm(job)} />
+                <Icon type="edit" title="编辑" onClick={() => this.showUpdateDialog(currentItem)} />
+                <Icon type="close" title="删除" style={{ color: '#ee6633', marginLeft: 12 }} onClick={() => this.deleteConfirm(currentItem)} />
             </span>
         ),
     }];
 
     state = {
-        mJobs: [],
+        mParts: [],
         showAddDialog: false,
-        job: {}
+        currentItem: {},
+        mPartTypes:[
+            {id:0, name:'所有'},
+            {id:1, name:'电器部分'},
+            {id:2, name:'液压部分'},
+            {id:3, name:'其他易损件部分'},
+        ],
+        type: 0,
     };
 
+    getData() {
+        HttpUtil.get(ApiUtil.API_GET_PARTS + this.state.type)
+            .then(
+                data => {
+                    data.map((item, index) => {
+                        item.index = index + 1;
+                        return item;
+                    });
+                    this.setState({
+                        mParts: data
+                    });
+                }
+            ).catch(error => {
+                message.error(error.message);
+            });
+    }
 
     componentDidMount() {
-        //this.getData();
+        this.getData();
     }
 
 
     render() {
         return (
-            <div>               
+            <div>
                 <div>
-                    <Select style={{ width: 240, marginRight: 20, marginTop: 4 }} defaultValue={this.state.jobSelected} onChange={this.handleFilterChange}>
-                        {this.state.mJobs.map((item) => <Select.Option value={item.id} key={item.id + ''}>{item.id > 0 ? item.name : '所有类别'}</Select.Option>)}
+                    <Select style={{ width: 240, marginRight: 20, marginTop: 4 }} defaultValue={this.state.type} onChange={this.handleFilterChange}>
+                        {this.state.mPartTypes.map((item) => <Select.Option value={item.id} key={item.id + ''}>{item.id > 0 ? item.name : '所有类别'}</Select.Option>)}
                     </Select>
 
                     <Button type="primary" icon="plus" onClick={() => this.showUpdateDialog()} style={{ float: 'right', marginTop: 4 }}>添加</Button>
                 </div>
                 <Table
                     style={{ marginTop: 10 }}
-                    dataSource={this.props.jobList}
+                    dataSource={this.state.mParts}
                     rowKey={item => item.id}
                     columns={this.columns}
                     pagination={false} />
 
                 <Modal
-                    title={this.state.job.id ? "修改配件" : "添加配件"}
+                    title={this.state.currentItem.id ? "修改配件" : "添加配件"}
                     okText="保存"
                     cancelText="取消"
                     visible={this.state.showAddDialog}
@@ -74,7 +98,7 @@ export default class DeviceParts extends React.Component {
                     onCancel={() => this.setState({ showAddDialog: false })}>
                     <Input type='text'
                         onChange={this.handleTextChanged}
-                        value={this.state.job.name}
+                        value={this.state.currentItem.name}
                         placeholder="配件名" />
 
                 </Modal>
@@ -82,17 +106,24 @@ export default class DeviceParts extends React.Component {
         )
     }
 
-    showUpdateDialog = (job) => {
-        if (job === undefined) {
-            job = {
+    handleFilterChange = (type) => {
+        this.setState({
+            type:type,
+        })
+        this.getData()
+    }
+
+    showUpdateDialog = (item) => {
+        if (item === undefined) {
+            item = {
                 id: 0,
                 name: ''
             };
         }
-        let currentJob = Object.assign({}, this.state.job, job);     // 对象赋值，同时注意不要给state直接赋值，先追加到空对象{}
+        let currentItem = Object.assign({}, this.state.currentItem, item);     // 对象赋值，同时注意不要给state直接赋值，先追加到空对象{}
         this.setState({
             showAddDialog: true,
-            job: currentJob
+            currentItem: currentItem
         });
     }
 
@@ -103,8 +134,8 @@ export default class DeviceParts extends React.Component {
         //console.log(e.target.value);
     }
 
-    deleteConfirm = (job) => {
-        
+    deleteConfirm = (currentItem) => {
+
     }
 
 }

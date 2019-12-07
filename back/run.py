@@ -5,11 +5,8 @@
 
 from flask import Flask, render_template, request, send_from_directory
 import os
-import SqliteUtil as DBUtil
 import json
-import FileUtil
-
-upload_root_dir = 'uploads'
+import SqliteUtil as DBUtil
 
 # Flask初始化参数尽量使用你的包名，这个初始化方式是官方推荐的，官方解释：http://flask.pocoo.org/docs/0.12/api/#flask.Flask
 '''
@@ -36,7 +33,9 @@ def react():
 apiPrefix = '/api/v1/'
 
 
-
+@app.route(apiPrefix + 'getParts/<int:type>')
+def getParts(type):
+    return DBUtil.getParts(type)
 
 
 # if __name__ == '__main__': 确保服务器只会在该脚本被 Python 解释器直接执行的时候才会运行，而不是作为模块导入的时候。
