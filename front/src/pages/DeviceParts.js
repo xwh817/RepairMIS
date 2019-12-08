@@ -19,9 +19,11 @@ export default class DeviceParts extends React.Component {
     }, {
         title: '单位',
         dataIndex: 'unit',
+        align: 'center',
     }, {
         title: '单价',
         dataIndex: 'price',
+        align: 'center',
     }, {
         title: '备注',
         dataIndex: 'remarks',
@@ -41,17 +43,17 @@ export default class DeviceParts extends React.Component {
         mParts: [],
         showAddDialog: false,
         currentItem: {},
-        mPartTypes:[
-            {id:0, name:'所有'},
-            {id:1, name:'电器部分'},
-            {id:2, name:'液压部分'},
-            {id:3, name:'其他易损件部分'},
+        mPartTypes: [
+            { id: 0, name: '所有类别' },
+            { id: 1, name: '电器部分' },
+            { id: 2, name: '液压部分' },
+            { id: 3, name: '其他易损件部分' },
         ],
-        type: 0,
+        //type: 0,
     };
 
-    getData() {
-        HttpUtil.get(ApiUtil.API_GET_PARTS + this.state.type)
+    getData(type) {
+        HttpUtil.get(ApiUtil.API_GET_PARTS + type)
             .then(
                 data => {
                     data.map((item, index) => {
@@ -68,7 +70,7 @@ export default class DeviceParts extends React.Component {
     }
 
     componentDidMount() {
-        this.getData();
+        this.getData(0);
     }
 
 
@@ -76,8 +78,8 @@ export default class DeviceParts extends React.Component {
         return (
             <div>
                 <div>
-                    <Select style={{ width: 240, marginRight: 20, marginTop: 4 }} defaultValue={this.state.type} onChange={this.handleFilterChange}>
-                        {this.state.mPartTypes.map((item) => <Select.Option value={item.id} key={item.id + ''}>{item.id > 0 ? item.name : '所有类别'}</Select.Option>)}
+                    <Select style={{ width: 240, marginRight: 20, marginTop: 4 }} defaultValue={0} onChange={this.handleFilterChange}>
+                        {this.state.mPartTypes.map((item) => <Select.Option value={item.id} key={item.id + ''}>{item.name}</Select.Option>)}
                     </Select>
 
                     <Button type="primary" icon="plus" onClick={() => this.showUpdateDialog()} style={{ float: 'right', marginTop: 4 }}>添加</Button>
@@ -87,6 +89,7 @@ export default class DeviceParts extends React.Component {
                     dataSource={this.state.mParts}
                     rowKey={item => item.id}
                     columns={this.columns}
+                    onRow={this.onClickRow}
                     pagination={false} />
 
                 <Modal
@@ -100,17 +103,37 @@ export default class DeviceParts extends React.Component {
                         onChange={this.handleTextChanged}
                         value={this.state.currentItem.name}
                         placeholder="配件名" />
-
+                    <Input type='text'
+                        onChange={this.handleTextChanged}
+                        value={this.state.currentItem.unit}
+                        placeholder="单位" />
+                    <Input type='text'
+                        onChange={this.handleTextChanged}
+                        value={this.state.currentItem.price}
+                        placeholder="单价" />
+                    <Input type='text'
+                        onChange={this.handleTextChanged}
+                        value={this.state.currentItem.remarks}
+                        placeholder="备注" />
                 </Modal>
             </div>
         )
     }
 
+
+    // 选中行
+    onClickRow = (item) => {
+        return {
+            onClick: () => {
+                message.info(item.name);
+            },
+        };
+    }
     handleFilterChange = (type) => {
-        this.setState({
-            type:type,
-        })
-        this.getData()
+        /* this.setState({
+            type: type,
+        }) */
+        this.getData(type)
     }
 
     showUpdateDialog = (item) => {

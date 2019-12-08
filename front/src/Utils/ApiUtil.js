@@ -7,5 +7,7 @@ export default class ApiUtil {
 
     static API_GET_PARTS = ApiUtil.URL_ROOT + '/getParts/';
 
+    static API_GET_REPAIR_ITEMS = ApiUtil.URL_ROOT + '/getRepairItems/';
+
 
 }
