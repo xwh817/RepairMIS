@@ -10,9 +10,9 @@ import HttpUtil from '../Utils/HttpUtil';
 export default class RepairItems extends React.Component {
     columns = [{
         title: '序号',
-        dataIndex: 'index',
         width: 80,
-        align: 'center'
+        align: 'center',
+        render: (text, record, index) => (<span>{index+1}</span>)
     },
     {
         title: '维修项目',
@@ -51,10 +51,6 @@ export default class RepairItems extends React.Component {
         HttpUtil.get(ApiUtil.API_GET_REPAIR_ITEMS + type)
             .then(
                 data => {
-                    data = data.map((item, index) => {
-                        item.index = index + 1; // 添加index字段
-                        return item;
-                    });
                     if (type === 0) {   // 大类
                         this.setState({
                             mTypes: [{ id: 0, name: '大类' }, ...data],

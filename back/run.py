@@ -33,6 +33,10 @@ def react():
 apiPrefix = '/api/v1/'
 
 
+@app.route(apiPrefix + 'getUsers/<int:type>')
+def getUsers(type):
+    return DBUtil.getUsers(type)
+
 @app.route(apiPrefix + 'getParts/<int:type>')
 def getParts(type):
     return DBUtil.getParts(type)

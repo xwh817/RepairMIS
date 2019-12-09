@@ -3,6 +3,7 @@
 import sqlite3
 import json
 import csv
+import dao.UserDao as userDao
 
 db_name = 'repair_manager'
 
@@ -12,6 +13,13 @@ cursor = conn.cursor()
 
 def createTables():
     try:
+        sql_create_t_user = '''CREATE TABLE IF NOT EXISTS t_user(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name VARCHAR(30) NOT NULL,
+            pwd VARCHAR(64),
+            role INT UNSIGNED,
+            phone VARCHAR(20)
+            )'''
         sql_create_t_parts = '''CREATE TABLE IF NOT EXISTS t_parts(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name VARCHAR(100) NOT NULL,
@@ -27,6 +35,7 @@ def createTables():
             price NUMERIC,
             remarks VARCHAR(200)
             )'''
+        cursor.execute(sql_create_t_user)
         cursor.execute(sql_create_t_parts)
         cursor.execute(sql_create_t_repair_items)
     except Exception as e:
@@ -34,6 +43,14 @@ def createTables():
 
 
 #createTables()
+
+def getUsers(type):
+    return userDao.getUsers(cursor, type)
+
+def addTestUsers(name, pwd, role, phone):
+    sql = "insert into t_user (name, pwd, role, phone) VALUES ('%s','%s', %s, '%s')" % (name, pwd, role, phone)
+    cursor.execute(sql)
+    conn.commit()
 
 
 def getParts(type):
@@ -145,6 +162,17 @@ def dumpRepairItemsFromCVX():
         return json.dumps({'code': -1, 'message': repr(e)})
 
 #createTables()
+'''
+addTestUsers('Admin', '123', 1, '13112345566')
+addTestUsers('Operator', '123', 2, '13112345566')
+addTestUsers('工程师1', '123', 4, '13112345566')
+addTestUsers('工程师2', '123', 4, '13112345566')
+addTestUsers('工程师3', '123', 4, '13112345566')
+'''
+
+#getUsers(0)
+
+
 #dumpRepairItemsFromCVX()
 #getRepairItems(0)
 

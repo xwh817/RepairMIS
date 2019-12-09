@@ -57,7 +57,7 @@ class App extends Component {
             onSelect={({key}) => this.setState({currentPage:key})}>
             <Menu.Item key="1">
               <Icon type="team" />
-              <span>人员管理</span>
+              <span>用户管理</span>
             </Menu.Item>
             <Menu.Item key="2">
               <Icon type="cluster" />

@@ -9,9 +9,9 @@ import HttpUtil from '../Utils/HttpUtil';
 export default class DeviceParts extends React.Component {
     columns = [{
         title: '序号',
-        dataIndex: 'index',
         width: 80,
-        align: 'center'
+        align: 'center',
+        render: (text, record, index) => (<span>{index+1}</span>)
     },
     {
         title: '产品名称',
@@ -56,10 +56,6 @@ export default class DeviceParts extends React.Component {
         HttpUtil.get(ApiUtil.API_GET_PARTS + type)
             .then(
                 data => {
-                    data.map((item, index) => {
-                        item.index = index + 1;
-                        return item;
-                    });
                     this.setState({
                         mParts: data
                     });
@@ -121,7 +117,7 @@ export default class DeviceParts extends React.Component {
     }
 
 
-    // 选中行
+    // 点击行
     onClickRow = (item) => {
         return {
             onClick: () => {

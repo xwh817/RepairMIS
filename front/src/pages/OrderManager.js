@@ -8,9 +8,9 @@ import {
 export default class OrderManger extends React.Component {
     columns = [{
         title: '序号',
-        dataIndex: 'index',
         width: 80,
-        align: 'center'
+        align: 'center',
+        render: (text, record, index) => (<span>{index+1}</span>)
     },
     {
         title: '型号',
