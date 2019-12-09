@@ -12,7 +12,7 @@ export default class RepairItems extends React.Component {
         title: '序号',
         width: 80,
         align: 'center',
-        render: (text, record, index) => (<span>{index+1}</span>)
+        render: (text, record, index) => `${index + 1}`
     },
     {
         title: '维修项目',

@@ -37,6 +37,20 @@ apiPrefix = '/api/v1/'
 def getUsers(type):
     return DBUtil.getUsers(type)
 
+
+@app.route(apiPrefix + 'updateUser', methods=['POST'])
+def updateUser():
+    data = request.get_data(as_text=True)
+    re = DBUtil.addOrUpdateUser(data)
+    return json.dumps(re)
+
+
+@app.route(apiPrefix + 'deleteUser/<int:id>')
+def deleteUser(id):
+    re = DBUtil.deleteUser(id)
+    return re
+
+
 @app.route(apiPrefix + 'getParts/<int:type>')
 def getParts(type):
     return DBUtil.getParts(type)

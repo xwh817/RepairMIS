@@ -1,44 +1,5 @@
 import json
 
-def addOrUpdateUser(db, cursor, json_str):
-  try:
-    user = json.loads(json_str)
-    id = user.get('id', 0)
-    name = user.get('name', '')
-    pwd = user.get('pwd', '')
-    role = user.get('role', '2')
-    phone = user.get('phone', '')
-    result = ''
-
-    if id == 0:  # 新增
-      sql = "insert into t_user (name, pwd, role, phone) VALUES ('%s','%s', %s, '%s')" % (name, pwd, role, phone)
-      #values = (name)
-      print(sql)
-      cursor.execute(sql)
-      result = '添加成功'
-      print(cursor.rowcount, result)
-    else:   # 修改
-      sql = "update t_user set name='%s' where id=%d" % (name, id)
-      print(sql)
-      cursor.execute(sql)
-      result = '更新成功'
-      print(cursor.rowcount, result)
-
-    db.commit()
-    re = {
-      'code':0,
-      'message':result
-    }
-    return json.dumps(re)
-  except Exception as e:
-    re = {
-      'code':-1,
-      'message':str(e)
-    }
-    print(str)
-    return json.dumps(re)
-
-
 
 def deleteUser(db, cursor, id):
   try:
@@ -75,6 +36,7 @@ def getUsers(cursor, type):
         part = {
             'id': item[0],
             'name': item[1],
+            'pwd': item[2],
             'role': item[3], 
             'phone': item[4],
         }

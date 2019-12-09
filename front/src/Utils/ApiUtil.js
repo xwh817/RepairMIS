@@ -8,6 +8,8 @@ export default class ApiUtil {
     static API_GET_PARTS = ApiUtil.URL_ROOT + '/getParts/';
     static API_GET_REPAIR_ITEMS = ApiUtil.URL_ROOT + '/getRepairItems/';
     static API_GET_USERS = ApiUtil.URL_ROOT + '/getUsers/';
+    static API_USER_UPDATE = ApiUtil.URL_ROOT + '/updateUser';
+    static API_USER_DELETE = ApiUtil.URL_ROOT + '/deleteUser/';
 
 
 }
