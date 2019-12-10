@@ -10,9 +10,9 @@ import HttpUtil from '../Utils/HttpUtil';
 export default class RepairItems extends React.Component {
     columns = [{
         title: '序号',
+        dataIndex: 'index',
         width: 80,
-        align: 'center',
-        render: (text, record, index) => `${index + 1}`
+        align: 'center'
     },
     {
         title: '维修项目',
@@ -33,7 +33,7 @@ export default class RepairItems extends React.Component {
         render: (item) => (
             <span>
                 <Icon type="edit" title="编辑" onClick={() => this.showUpdateDialog(item)} />
-                <Icon type="close" title="删除" style={{ color: '#ee6633', marginLeft: 12 }} onClick={() => this.deleteConfirm(item)} />
+                <Icon type="close" title="删除" style={{ color: '#ee6633', marginLeft: 20 }} onClick={() => this.deleteConfirm(item)} />
             </span>
         ),
     }];
@@ -51,6 +51,7 @@ export default class RepairItems extends React.Component {
         HttpUtil.get(ApiUtil.API_GET_REPAIR_ITEMS + type)
             .then(
                 data => {
+                    data.map((item,index) => item.index=index+1);
                     if (type === 0) {   // 大类
                         this.setState({
                             mTypes: [{ id: 0, name: '大类' }, ...data],

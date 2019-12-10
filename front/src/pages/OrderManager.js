@@ -8,9 +8,9 @@ import {
 export default class OrderManger extends React.Component {
     columns = [{
         title: '序号',
+        dataIndex: 'index',
         width: 80,
-        align: 'center',
-        render: (text, record, index) => `${index + 1}`
+        align: 'center'
     },
     {
         title: '型号',
@@ -34,7 +34,7 @@ export default class OrderManger extends React.Component {
         render: (job) => (
             <span>
                 <Icon type="edit" title="编辑" onClick={() => this.showUpdateDialog(job)} />
-                <Icon type="close" title="删除" style={{ color: '#ee6633', marginLeft: 12 }} onClick={() => this.deleteConfirm(job)} />
+                <Icon type="close" title="删除" style={{ color: '#ee6633', marginLeft: 20 }} onClick={() => this.deleteConfirm(job)} />
             </span>
         ),
     }];

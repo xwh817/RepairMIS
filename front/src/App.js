@@ -1,88 +1,109 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
 
-import 'antd/dist/antd.css';
-import './App.css';
-import myIcon from './images/icon.jpg';
+import "antd/dist/antd.css";
+import "./App.css";
+import myIcon from "./images/icon.jpg";
 
-import {
-  Layout, Menu, Icon, Avatar,
-} from 'antd';
+import { Layout, Menu, Icon, Avatar } from "antd";
 
-import UserManager from './pages/UserManager';
-import RepairItems from './pages/RepairItems';
-import DeviceParts from './pages/DeviceParts';
-import OrderManager from './pages/OrderManager';
+import BaseInfoPage from "./pages/BaseInfoPage";
+import UserManager from "./pages/UserManager";
+import RepairItems from "./pages/RepairItems";
+import DeviceParts from "./pages/DeviceParts";
+import OrderManager from "./pages/OrderManager";
 
-
-const {
-  Content, Footer, Sider,
-} = Layout;
+const { Content, Footer, Sider } = Layout;
 
 class App extends Component {
   state = {
     collapsed: false,
-    currentPage: '1',
+    currentPage: "1"
   };
 
-  onCollapse = (collapsed) => {
+  onCollapse = collapsed => {
     console.log(collapsed);
     this.setState({ collapsed });
-  }
+  };
 
   getPageByMenu() {
-    let key = this.state.currentPage;
-    switch(key) {
-      case '1': return <UserManager/>;break;
-      case '2': return <RepairItems/>;break;
-      case '3': return <DeviceParts/>;break;
-      case '4': return <OrderManager/>;break;
+    switch (this.state.currentPage) {
+      case "1":
+        return <BaseInfoPage />;
+      case "2":
+        return <UserManager />;
+      case "3":
+        return <RepairItems />;
+      case "4":
+        return <DeviceParts />;
+      case "5":
+        return <OrderManager />;
+      case "6":
+        return <OrderManager />;
+      default:
+        return <BaseInfoPage/>
     }
   }
 
+  menus = [
+    { key: "1", title: "门店信息", icon: "team" },
+    { key: "2", title: "用户管理", icon: "team" },
+    { key: "3", title: "维修项目", icon: "team" },
+    { key: "4", title: "配件", icon: "team" },
+    { key: "5", title: "维修单", icon: "team" },
+    { key: "6", title: "数据备份", icon: "database" }
+  ];
+
+  renderMenuItem = item => {
+    return (
+      <Menu.Item key={item.key}>
+        <Icon type={item.icon} />
+        <span>{item.title}</span>
+      </Menu.Item>
+    );
+  };
+
   render() {
     return (
-      <Layout style={{ minHeight: '100vh'}}>
+      <Layout style={{ minHeight: "100vh" }}>
         <Sider
-        width={152}
+          width={152}
           collapsible
           collapsed={this.state.collapsed}
           onCollapse={this.onCollapse}
         >
-          <div className="logo" style={{height:80,backgroundColor:"#002140", textAlign: 'center'}}>
-            <Avatar src={myIcon} alt='' style={{width:60, height:60, marginTop:10}}/>
+          <div
+            className="logo"
+            style={{
+              height: 80,
+              backgroundColor: "#002140",
+              textAlign: "center"
+            }}
+          >
+            <Avatar
+              src={myIcon}
+              alt=""
+              style={{ width: 60, height: 60, marginTop: 10 }}
+            />
           </div>
 
-          <Menu theme="dark"  mode="inline"
-            defaultSelectedKeys={[this.state.currentPage]} 
-            onSelect={({key}) => this.setState({currentPage:key})}>
-            <Menu.Item key="1">
-              <Icon type="team" />
-              <span>用户管理</span>
-            </Menu.Item>
-            <Menu.Item key="2">
-              <Icon type="cluster" />
-              <span>维修项目</span>
-            </Menu.Item>
-            <Menu.Item key="3">
-              <Icon type="database" />
-              <span>配件</span>
-            </Menu.Item>
-            <Menu.Item key="4">
-              <Icon type="database" />
-              <span>维修单</span>
-            </Menu.Item>
+          <Menu
+            theme="dark"
+            mode="inline"
+            defaultSelectedKeys={[this.state.currentPage]}
+            onSelect={({ key }) => this.setState({ currentPage: key })}
+          >
+            {this.menus.map(item => this.renderMenuItem(item))}
           </Menu>
         </Sider>
 
         <Layout>
           {/* <Header style={{ margin: '0 16px', background: '#fff', padding: 0 }} /> */}
-          <Content style={{ margin: '12px 12px' }}>
-           
-            <div style={{ padding: 24, background: '#fff', minHeight: 360 }}>
+          <Content style={{ margin: "12px 12px" }}>
+            <div style={{ padding: 24, background: "#fff", minHeight: 360 }}>
               {this.getPageByMenu()}
             </div>
           </Content>
-          <Footer style={{ textAlign: 'center'}}>
+          <Footer style={{ textAlign: "center" }}>
             Loving you forever ©2019 Created by XWH
           </Footer>
         </Layout>

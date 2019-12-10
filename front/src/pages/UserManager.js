@@ -10,9 +10,9 @@ export default class UserManager extends React.Component {
   columns = [
     {
       title: "序号",
+      dataIndex: "index",
       width: 80,
       align: "center",
-      render: (text, record, index) => `${index + 1}`
     },
     {
       title: "用户名",
@@ -35,18 +35,8 @@ export default class UserManager extends React.Component {
       width: 160,
       render: item => (
         <span>
-          <Icon
-            type="edit"
-            title="编辑"
-            onClick={() => this.showDialog(item)}
-          />
-          &nbsp;&nbsp;
-          <Icon
-            type="close"
-            title="删除"
-            style={{ color: "#ee6633", marginLeft: 12 }}
-            onClick={() => this.deleteConfirm(item)}
-          />
+          <Icon type="edit" title="编辑" onClick={() => this.showDialog(item)}/>
+          <Icon type="close" title="删除" style={{ color: "#ee6633", marginLeft: 20 }} onClick={() => this.deleteConfirm(item)}/>
         </span>
       )
     }
@@ -62,7 +52,7 @@ export default class UserManager extends React.Component {
   getTypeName(role) {
     for (let i = 0; i < this.userTypes.length; i++) {
       let item = this.userTypes[i];
-      if (item.id == role) {
+      if (item.id === role) {
         return item.name;
       }
     }
@@ -81,6 +71,7 @@ export default class UserManager extends React.Component {
     });
     HttpUtil.get(ApiUtil.API_GET_USERS + type)
       .then(data => {
+        data.map((item,index) => item.index=index+1);
         this.setState({
           mItems: data,
           loading: false,
@@ -199,15 +190,9 @@ export default class UserManager extends React.Component {
     });
   };
 
-  handleAdd = () => { };
-
-  handleTextChanged = e => {
-    //console.log(e.target.value);
-  };
-
   deleteConfirm = item => {
     var that = this;    // 下面的内嵌对象里面，this就改变了，这里在外面存一下。
-    const modal = Modal.confirm({
+    Modal.confirm({
       title: '确认',
       content: '确定要删除该用户吗？',
       okText: '确认',
@@ -219,14 +204,3 @@ export default class UserManager extends React.Component {
     });
   };
 }
-
-const styles = {
-  formItemLayout: {
-    labelCol: { span: 4 },
-    wrapperCol: { span: 16 }
-  },
-  formItem2Col: {
-    labelCol: { span: 4 },
-    wrapperCol: { span: 8 }
-  }
-};

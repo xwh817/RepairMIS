@@ -2,12 +2,8 @@ import React from "react";
 import {
   Modal,
   Form,
-  Icon,
   Input,
-  InputNumber,
   Select,
-  Button,
-  Upload,
   message
 } from "antd";
 import CommonValues from "../Utils/CommonValues";
