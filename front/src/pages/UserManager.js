@@ -155,6 +155,7 @@ export default class UserManager extends React.Component {
       let datas = [...this.state.mItems];
       for (let i = 0; i < datas.length; i++) {
         if (datas[i].id === user.id) {
+          user.index = datas[i].index;
           datas[i] = user;
           this.setState({
             mItems: datas

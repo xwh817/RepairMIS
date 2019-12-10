@@ -157,12 +157,77 @@ def addPart(name, unit, price, remarks, t):
     cursor.execute(sql)
     conn.commit()   # 提交更新，不然没有保存。
 
+def addOrUpdatePart(json_str):
+    try:
+        print(json_str)
+        part = json.loads(json_str)
+        id = part.get('id', 0)
+        sType = part.get('sType', 0)
+        name = part.get('name', '')
+        unit = part.get('unit', '')
+        price = part.get('price', 0)
+        remarks = part.get('remarks', '')
+        result = ''
+        newId = id
+
+        if id == 0:  # 新增
+            keys = 'name, unit, price, remarks, sType'
+            values = "'%s','%s',%s,'%s',%s" %(name, unit, price, remarks, sType)
+            sql = "insert into t_parts(%s) VALUES(%s)" % (keys, values)
+            print(sql)
+            cursor.execute(sql)
+            result = '添加成功'
+            newId = cursor.lastrowid
+            print(result, "newId:", newId)
+        else:   # 修改
+            update = "name='%s', unit='%s', price=%d, remarks='%s', sType=%d" %(name, unit, price, remarks, sType)
+            where = "where id=" + str(id)
+            sql = "update t_parts set %s %s" % (update, where)
+            print(sql)
+            cursor.execute(sql)
+            result = '更新成功'
+            print(cursor.rowcount, result)
+
+        conn.commit()
+        re = {
+            'code': 0,
+            'newId': newId,
+            'message': result
+        }
+        return re
+    except Exception as e:
+        print(repr(e))
+        re = {
+            'code': -1,
+            'message': repr(e)
+        }
+        return re
+
+
+def deletePart(id):
+    try:
+        sql = "delete from t_parts where id=%d" % (id)
+        print(sql)
+        cursor.execute(sql)
+        conn.commit()
+        re = {
+            'code': 0,
+            'message': '删除成功'
+        }
+        return json.dumps(re)
+    except Exception as e:
+        re = {
+            'code': -1,
+            'message': repr(e)
+        }
+        return json.dumps(re)
+
+
+
 
 # 获取维修项目，sid=0为大类
 def getRepairItems(sid):
-
     sql = "select * from t_repair_items where sid=%d" % sid
-
     print(sql)
 
     cursor.execute(sql)
@@ -173,7 +238,7 @@ def getRepairItems(sid):
         part = {
             'id': item[0],
             'name': item[1],
-            'unit': item[2], 
+            'sid': item[2], 
             'price': item[3], 
             'remarks': item[4],
         }
@@ -183,6 +248,71 @@ def getRepairItems(sid):
     #print(json_str)
 
     return json_str
+
+
+def addOrUpdateRepairItem(json_str):
+    try:
+        print(json_str)
+        repairItem = json.loads(json_str)
+        id = repairItem.get('id', 0)
+        sid = repairItem.get('sid', 0)
+        name = repairItem.get('name', '')
+        price = repairItem.get('price', 0)
+        remarks = repairItem.get('remarks', '')
+        result = ''
+        newId = id
+
+        if id == 0:  # 新增
+            keys = 'name, sid, price, remarks'
+            values = "'%s',%s,%s,'%s'" %(name, sid, price, remarks)
+            sql = "insert into t_repair_items(%s) VALUES(%s)" % (keys, values)
+            print(sql)
+            cursor.execute(sql)
+            result = '添加成功'
+            newId = cursor.lastrowid
+            print(result, "newId:", newId)
+        else:   # 修改
+            update = "name='%s', sid=%d, price=%d, remarks='%s'" %(name, sid, price, remarks)
+            where = "where id=" + str(id)
+            sql = "update t_repair_items set %s %s" % (update, where)
+            print(sql)
+            cursor.execute(sql)
+            result = '更新成功'
+            print(cursor.rowcount, result)
+
+        conn.commit()
+        re = {
+            'code': 0,
+            'newId': newId,
+            'message': result
+        }
+        return re
+    except Exception as e:
+        print(repr(e))
+        re = {
+            'code': -1,
+            'message': repr(e)
+        }
+        return re
+
+
+def deleteRepairItem(id):
+    try:
+        sql = "delete from t_repair_items where id=%d" % (id)
+        print(sql)
+        cursor.execute(sql)
+        conn.commit()
+        re = {
+            'code': 0,
+            'message': '删除成功'
+        }
+        return json.dumps(re)
+    except Exception as e:
+        re = {
+            'code': -1,
+            'message': repr(e)
+        }
+        return json.dumps(re)
 
 def addRepairItem(id, name, sid, price):
     if price=='':
@@ -194,7 +324,7 @@ def addRepairItem(id, name, sid, price):
     cursor.execute(sql)
     conn.commit()   # 提交更新，不然没有保存。
        
-
+       
 def dumpPartsFromCVX():
     try:
         with open('parts.csv', encoding='gb2312') as f:

@@ -55,9 +55,33 @@ def deleteUser(id):
 def getParts(type):
     return DBUtil.getParts(type)
 
+@app.route(apiPrefix + 'updatePart', methods=['POST'])
+def updatePart():
+    data = request.get_data(as_text=True)
+    re = DBUtil.addOrUpdatePart(data)
+    return json.dumps(re)
+
+@app.route(apiPrefix + 'deletePart/<int:id>')
+def deletePart(id):
+    re = DBUtil.deletePart(id)
+    return re
+
+
 @app.route(apiPrefix + 'getRepairItems/<int:type>')
 def getRepairItems(type):
     return DBUtil.getRepairItems(type)
+
+@app.route(apiPrefix + 'updateRepairItem', methods=['POST'])
+def updateRepairItem():
+    data = request.get_data(as_text=True)
+    re = DBUtil.addOrUpdateRepairItem(data)
+    return json.dumps(re)
+
+@app.route(apiPrefix + 'deleteRepairItem/<int:id>')
+def deleteRepairItem(id):
+    re = DBUtil.deleteRepairItem(id)
+    return re
+
 
 
 

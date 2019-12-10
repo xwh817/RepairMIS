@@ -19,4 +19,10 @@ export default class CommonValues {
             name: "工程师"
         }
     ];
+
+    static partTypes = [
+      { index:1, id: 1, name: "电器部分" },
+      { index:2, id: 2, name: "液压部分" },
+      { index:3, id: 3, name: "其他易损件部分" }
+    ];
 }
