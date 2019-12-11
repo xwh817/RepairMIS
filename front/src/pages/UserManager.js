@@ -5,6 +5,7 @@ import ApiUtil from "../Utils/ApiUtil";
 import HttpUtil from "../Utils/HttpUtil";
 import UserInfoDialog from "./UserInfoDialog";
 import CommonValues from "../Utils/CommonValues";
+import ArrayUtil from "../Utils/ArrayUtil";
 
 export default class UserManager extends React.Component {
   columns = [
@@ -57,6 +58,8 @@ export default class UserManager extends React.Component {
       }
     }
   }
+  
+  currentType = 0;
 
   state = {
     mItems: [],
@@ -87,7 +90,8 @@ export default class UserManager extends React.Component {
       .then(
         re => {
           message.info(re.message);
-          this.getData(0);
+          let items = ArrayUtil.deleteItem(this.state.mItems, id);
+          this.setState({mItems: items});
         }
       ).catch(error => {
         message.error(error.message);
@@ -104,7 +108,7 @@ export default class UserManager extends React.Component {
         <div>
           <Select
             style={{ width: 240, marginRight: 20, marginTop: 4 }}
-            defaultValue={0}
+            defaultValue={this.currentType}
             onChange={this.handleFilterChange}
           >
             {this.userTypes.map(item => (
@@ -146,30 +150,31 @@ export default class UserManager extends React.Component {
   }
 
 
-  handleInfoDialogClose = (user) => {
+  handleInfoDialogClose = (user, newId) => {
     this.setState({
       showInfoDialog: false
     });
 
     if (user.id) { // 修改
       let datas = [...this.state.mItems];
-      for (let i = 0; i < datas.length; i++) {
-        if (datas[i].id === user.id) {
-          user.index = datas[i].index;
-          datas[i] = user;
-          this.setState({
-            mItems: datas
-          });
-          break;
-        }
-      }
+      ArrayUtil.replaceItem(datas, user);
+      this.setState({
+        mItems: datas
+      });
     } else {    // 新增
-      this.getData(0);
+      user.id = newId;
+      user.index = this.state.mItems.length+1;
+      let datas = [...this.state.mItems];
+      datas.push(user);
+      this.setState({
+        mItems: datas
+      });
     }
   }
 
 
   handleFilterChange = type => {
+    this.currentType = type;
     this.getData(type);
   };
 
@@ -179,7 +184,7 @@ export default class UserManager extends React.Component {
       currentItem = {
         id: 0,
         name: '',
-        role: 0,
+        role: this.currentType,
         pwd: '',
         phone: ''
       };

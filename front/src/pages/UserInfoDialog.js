@@ -44,18 +44,18 @@ class UserInfoDialog extends React.Component {
             re => {
               console.log('post result: ', re.newId);
               message.info(re.message);
+              setTimeout(() => {
+                this.setState({
+                  confirmLoading: false,
+                });
+                this.props.onDialogConfirm(values, re.newId);
+              }, 500);
             }
           ).catch(error => {
             message.error(error.message);
           });
 
         console.log('Received values of form: ', values);
-        setTimeout(() => {
-          this.setState({
-            confirmLoading: false,
-          });
-          this.props.onDialogConfirm(values);
-        }, 1000);
       }
     });
   };
@@ -70,6 +70,7 @@ class UserInfoDialog extends React.Component {
   };
 
   renderPwd(getFieldDecorator) {
+    console.log("userType: " + this.state.userType);
     if (this.state.userType != 4) {
       return (
         <Form.Item label="密码" {...styles.formItem2Col}>
@@ -112,7 +113,7 @@ class UserInfoDialog extends React.Component {
                 rules: [{ required: true, message: "请选择用户类别！" }]
               })(
                 <Select
-                  style={{ width: 140 }}
+                  style={{ width: 160 }}
                   onChange={value => this.setState({ userType: value })}
                 >
                   {this.userTypes.map(item => (
