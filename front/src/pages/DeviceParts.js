@@ -4,6 +4,7 @@ import ApiUtil from "../Utils/ApiUtil";
 import HttpUtil from "../Utils/HttpUtil";
 import DevicePartDialog from "./DevicePartDialog";
 import CommonValues from '../Utils/CommonValues';
+import ArrayUtil from "../Utils/ArrayUtil";
 
 export default class DeviceParts extends React.Component {
   columns = [
@@ -49,8 +50,9 @@ export default class DeviceParts extends React.Component {
     showInfoDialog: false,
     currentItem: {},
     mPartTypes: [{ id: 0, name: "配件大类" }, ...CommonValues.partTypes]
-    //type: 0,
   };
+
+  currentType = 0;
 
   getData(type) {
     if (type === 0) {
@@ -61,9 +63,7 @@ export default class DeviceParts extends React.Component {
       HttpUtil.get(ApiUtil.API_GET_PARTS + type)
       .then(data => {
         data.map((item, index) => (item.index = index + 1));
-        this.setState({
-          mItems: data
-        });
+        this.setState({mItems: data});
       })
       .catch(error => {
         message.error(error.message);
@@ -77,7 +77,8 @@ export default class DeviceParts extends React.Component {
       .then(
         re => {
           message.info(re.message);
-          this.getData(0);
+          let items = ArrayUtil.deleteItem(this.state.mItems, id);
+          this.setState({mItems: items});
         }
       ).catch(error => {
         message.error(error.message);
@@ -85,7 +86,25 @@ export default class DeviceParts extends React.Component {
   }
 
   componentDidMount() {
-    this.getData(0);
+    this.getData(this.currentType);
+  }
+
+
+  renderDialog(){
+    if (this.state.showInfoDialog) {
+      return (
+        <DevicePartDialog
+          visible={this.state.showInfoDialog}
+          part={this.state.currentItem}
+          onClose={() => this.setState({ showInfoDialog: false })}
+          onDialogConfirm={this.onDialogConfirm}
+        />
+      );
+    }
+  }
+
+  renderColumns(){
+    return this.currentType === 0 ? [...this.columns].splice(0, 2) : this.columns;
   }
 
   render() {
@@ -94,7 +113,7 @@ export default class DeviceParts extends React.Component {
         <div>
           <Select
             style={{ width: 240, marginRight: 20, marginTop: 4 }}
-            defaultValue={0}
+            defaultValue={this.currentType}
             onChange={this.handleFilterChange}
           >
             {this.state.mPartTypes.map(item => (
@@ -117,19 +136,12 @@ export default class DeviceParts extends React.Component {
           style={{ marginTop: 10 }}
           dataSource={this.state.mItems}
           rowKey={item => item.id}
-          columns={this.columns}
-          onRow={this.onClickRow}
+          columns={this.renderColumns()}
+          onRow={this.currentType === 0 && this.onClickRow}
           pagination={false}
         />
 
-
-        <DevicePartDialog
-          visible={this.state.showInfoDialog}
-          part={this.state.currentItem}
-          partTypes={this.state.mPartTypes}
-          onClose={() => this.setState({ showInfoDialog: false })}
-          onDialogConfirm={this.handleInfoDialogClose}
-        />
+        {this.renderDialog()}
 
       </div>
     );
@@ -139,38 +151,38 @@ export default class DeviceParts extends React.Component {
   /* onClickRow = item => {
     return {
       onClick: () => {
-        message.info(item.name);
+        //message.info(item.name);
+        this.currentType = item.id;
+        this.getData(this.currentType);
       }
     };
   }; */
 
 
-  handleInfoDialogClose = (part) => {
+  onDialogConfirm = (part, newId) => {
     this.setState({
       showInfoDialog: false
     });
 
     if (part.id) { // 修改
       let datas = [...this.state.mItems];
-      for (let i = 0; i < datas.length; i++) {
-        if (datas[i].id === part.id) {
-          part.index = datas[i].index;
-          datas[i] = part;
-          this.setState({
-            mItems: datas
-          });
-          break;
-        }
-      }
+      ArrayUtil.replaceItem(datas, part);
+      this.setState({
+        mItems: datas
+      });
     } else {    // 新增
-      this.getData(0);
+      part.id = newId;
+      part.index = this.state.mItems.length+1;
+      let datas = [...this.state.mItems];
+      datas.push(part);
+      this.setState({
+        mItems: datas
+      });
     }
   }
 
   handleFilterChange = type => {
-    /* this.setState({
-            type: type,
-        }) */
+    this.currentType = type;
     this.getData(type);
   };
 
@@ -180,7 +192,7 @@ export default class DeviceParts extends React.Component {
       currentItem = {
         id: 0,
         name: '',
-        sType: 0
+        sType: this.currentType
       };
     }
     this.setState({
@@ -189,11 +201,6 @@ export default class DeviceParts extends React.Component {
     });
   };
 
-  handleAdd = () => { };
-
-  handleTextChanged = e => {
-    //console.log(e.target.value);
-  };
 
   deleteConfirm = item => {
     var that = this;    // 下面的内嵌对象里面，this就改变了，这里在外面存一下。

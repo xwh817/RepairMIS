@@ -13,22 +13,10 @@ import HttpUtil from "../Utils/HttpUtil";
 class UserInfoDialog extends React.Component {
   state = {
     confirmLoading: false,
-    user: {},
-    userType: 0
+    currentType: this.props.user.role
   };
 
   userTypes = [{ id: 0, name: '' }, ...CommonValues.userTypes];
-
-  // 将父控件中props的变化转化为当前state
-  componentWillReceiveProps(newProps) {
-    if (newProps.user && this.state.user.id !== newProps.user.id) {
-      this.setState({
-        user: newProps.user,
-        userType: newProps.user.role,
-      });
-    }
-  }
-
 
   handleOk = () => {
     this.props.form.validateFields((err, values) => {
@@ -44,12 +32,10 @@ class UserInfoDialog extends React.Component {
             re => {
               console.log('post result: ', re.newId);
               message.info(re.message);
-              setTimeout(() => {
-                this.setState({
-                  confirmLoading: false,
-                });
-                this.props.onDialogConfirm(values, re.newId);
-              }, 500);
+              this.setState({
+                confirmLoading: false,
+              });
+              this.props.onDialogConfirm(values, re.newId);
             }
           ).catch(error => {
             message.error(error.message);
@@ -69,9 +55,17 @@ class UserInfoDialog extends React.Component {
     console.log("handleSubmit");
   };
 
+  checkSelectEmpty = (rule, value, callback) => {
+    if (value == 0) {
+      callback('请选择用户类别！');
+    } else {
+      callback();
+    }
+  };
+  
   renderPwd(getFieldDecorator) {
-    console.log("userType: " + this.state.userType);
-    if (this.state.userType != 4) {
+    console.log("userType: " + this.props.user.role);
+    if (this.state.currentType != 4) {
       return (
         <Form.Item label="密码" {...styles.formItem2Col}>
           {getFieldDecorator("pwd", {
@@ -110,11 +104,11 @@ class UserInfoDialog extends React.Component {
 
             <Form.Item label="用户类别" {...styles.formItemLayout}>
               {getFieldDecorator("role", {
-                rules: [{ required: true, message: "请选择用户类别！" }]
+                rules: [{ validator: this.checkSelectEmpty },{ required: true}]
               })(
                 <Select
                   style={{ width: 160 }}
-                  onChange={value => this.setState({ userType: value })}
+                  onChange={value => this.setState({ currentType: value })}
                 >
                   {this.userTypes.map(item => (
                     <Select.Option value={item.id} key={item.id + ""}>

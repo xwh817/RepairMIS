@@ -12,21 +12,8 @@ import HttpUtil from "../Utils/HttpUtil";
 class RepairItemDialog extends React.Component {
   state = {
     confirmLoading: false,
-    repairItem: {},
-    currentType: 0,
-    deleteConfirm: false
+    currentType: this.props.repairItem.sid,
   };
-
-
-  // 将父控件中props的变化转化为当前state
-  componentWillReceiveProps(newProps) {
-    if (newProps.repairItem && this.state.repairItem.id !== newProps.repairItem.id) {
-      this.setState({ 
-        repairItem: newProps.repairItem,
-        currentType: newProps.repairItem.sid,
-       });
-    }
-  }
 
 
   handleOk = () => {
@@ -43,18 +30,14 @@ class RepairItemDialog extends React.Component {
             re => {
               console.log('post result: ', re.newId);
               message.info(re.message);
+              this.setState({
+                confirmLoading: false,
+              });
+              this.props.onDialogConfirm(values, re.newId);
             }
           ).catch(error => {
             message.error(error.message);
           });
-
-        console.log('Received values of form: ', values);
-        setTimeout(() => {
-          this.setState({
-            confirmLoading: false,
-          });
-          this.props.onDialogConfirm(values);
-        }, 1000);
       }
     });
   };
@@ -68,13 +51,12 @@ class RepairItemDialog extends React.Component {
     console.log("handleSubmit");
   };
 
-
   renderPrice(getFieldDecorator) {
     if (this.state.currentType != 0) {
       return (
         <Form.Item label="工时标价" {...styles.formItem2Col}>
-        {getFieldDecorator("price")(<Input type='number' placeholder="请输入标价（单位：元）" />)}
-      </Form.Item>);
+          {getFieldDecorator("price")(<Input type='number' placeholder="请输入标价（单位：元）" />)}
+        </Form.Item>);
     }
   }
 

@@ -6,6 +6,7 @@ import {
 import ApiUtil from '../Utils/ApiUtil';
 import HttpUtil from '../Utils/HttpUtil';
 import RepairItemDialog from './RepairItemDialog';
+import ArrayUtil from "../Utils/ArrayUtil";
 
 export default class RepairItems extends React.Component {
   columns = [{
@@ -41,11 +42,11 @@ export default class RepairItems extends React.Component {
   state = {
     mTypes: [{ id: 0, name: '项目大类' }],
     mItems: [],
-    //currentType: 0,
     currentItem: {},
     showInfoDialog: false,
   };
 
+  currentType = 0;
 
   getData(type) {
     HttpUtil.get(ApiUtil.API_GET_REPAIR_ITEMS + type)
@@ -74,17 +75,36 @@ export default class RepairItems extends React.Component {
     HttpUtil.get(ApiUtil.API_REPAIR_ITEM_DELETE + id)
       .then(
         re => {
+          let code = re.code;
+          if (code < 0) {
+            throw new Error(re.message)
+          }
           message.info(re.message);
-          this.getData(0);
+          let items = ArrayUtil.deleteItem(this.state.mItems, id);
+          this.setState({mItems: items});
         }
       ).catch(error => {
         message.error(error.message);
       });
   }
+
   componentDidMount() {
-    this.getData(0);
+    this.getData(this.currentType);
   }
 
+  renderDialog(){
+    if (this.state.showInfoDialog) {
+      return (
+        <RepairItemDialog
+          visible={this.state.showInfoDialog}
+          repairItem={this.state.currentItem}
+          itemTypes={this.state.mTypes}
+          onClose={() => this.setState({ showInfoDialog: false })}
+          onDialogConfirm={this.onDialogConfirm}
+        />
+      );
+    }
+  }
 
   render() {
     return (
@@ -92,7 +112,7 @@ export default class RepairItems extends React.Component {
 
         <div>
           <Select style={{ width: 240, marginRight: 20, marginTop: 4 }}
-            defaultValue={0}
+            defaultValue={this.currentType}
             onChange={this.handleFilterChange}>
             {this.state.mTypes.map((item) => <Select.Option value={item.id} key={item.id + ''}>{item.name}</Select.Option>)}
           </Select>
@@ -107,44 +127,36 @@ export default class RepairItems extends React.Component {
           columns={this.columns}
           pagination={false} />
 
+        {this.renderDialog()}
 
-        <RepairItemDialog
-          visible={this.state.showInfoDialog}
-          repairItem={this.state.currentItem}
-          itemTypes={this.state.mTypes}
-          onClose={() => this.setState({ showInfoDialog: false })}
-          onDialogConfirm={this.handleInfoDialogClose}
-        />
       </div>
     )
   }
 
-  handleInfoDialogClose = (repairItem) => {
+  onDialogConfirm = (repairItem, newId) => {
     this.setState({
       showInfoDialog: false
     });
 
     if (repairItem.id) { // 修改
       let datas = [...this.state.mItems];
-      for (let i = 0; i < datas.length; i++) {
-        if (datas[i].id === repairItem.id) {
-          repairItem.index = datas[i].index;
-          datas[i] = repairItem;
-          this.setState({
-            mItems: datas
-          });
-          break;
-        }
-      }
+      ArrayUtil.replaceItem(datas, repairItem);
+      this.setState({
+        mItems: datas
+      });
     } else {    // 新增
-      this.getData(0);
+      repairItem.id = newId;
+      repairItem.index = this.state.mItems.length+1;
+      let datas = [...this.state.mItems];
+      datas.push(repairItem);
+      this.setState({
+        mItems: datas
+      });
     }
   }
 
   handleFilterChange = (type) => {
-    /* this.setState({
-        currentType: type,
-    }); */
+    this.currentType = type;
     this.getData(type)
   }
 
@@ -154,20 +166,13 @@ export default class RepairItems extends React.Component {
       currentItem = {
         id: 0,
         name: '',
+        sid: this.currentType
       };
     }
     this.setState({
       currentItem: currentItem,
       showInfoDialog: true
     });
-  }
-
-
-  handleAdd = () => {
-  }
-
-  handleTextChanged = (e) => {
-    //console.log(e.target.value);
   }
 
   deleteConfirm = item => {

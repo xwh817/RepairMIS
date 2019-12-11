@@ -99,7 +99,20 @@ export default class UserManager extends React.Component {
   }
 
   componentDidMount() {
-    this.getData(0);
+    this.getData(this.currentType);
+  }
+
+  renderDialog(){
+    if (this.state.showInfoDialog) {
+      return (
+        <UserInfoDialog
+          visible={this.state.showInfoDialog}
+          user={this.state.currentItem}
+          onClose={() => this.setState({ showInfoDialog: false })}
+          onDialogConfirm={this.onDialogConfirm}
+        />
+      );
+    }
   }
 
   render() {
@@ -139,18 +152,13 @@ export default class UserManager extends React.Component {
           />
         </Spin>
 
-        <UserInfoDialog
-          visible={this.state.showInfoDialog}
-          user={this.state.currentItem}
-          onClose={() => this.setState({ showInfoDialog: false })}
-          onDialogConfirm={this.handleInfoDialogClose}
-        />
+        {this.renderDialog()}
       </div>
     );
   }
 
 
-  handleInfoDialogClose = (user, newId) => {
+  onDialogConfirm = (user, newId) => {
     this.setState({
       showInfoDialog: false
     });
@@ -189,7 +197,6 @@ export default class UserManager extends React.Component {
         phone: ''
       };
     }
-    //let currentItem = Object.assign({}, this.state.currentItem, item); // 对象赋值，同时注意不要给state直接赋值，先追加到空对象{}
     this.setState({
       currentItem: currentItem,
       showInfoDialog: true

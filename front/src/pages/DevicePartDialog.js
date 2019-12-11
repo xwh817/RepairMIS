@@ -3,31 +3,22 @@ import {
   Modal,
   Form,
   Input,
+  InputNumber,
   Select,
   message
 } from "antd";
 import ApiUtil from "../Utils/ApiUtil";
 import HttpUtil from "../Utils/HttpUtil";
+import CommonValues from "../Utils/CommonValues";
 
 class DevicePartDialog extends React.Component {
   state = {
     confirmLoading: false,
-    part: {},
-    currentType: 0,
-    deleteConfirm: false
+    currentType: this.props.part.sType,
   };
 
-
-  // 将父控件中props的变化转化为当前state
-  componentWillReceiveProps(newProps) {
-    if (newProps.part && this.state.part.id !== newProps.part.id) {
-      this.setState({ 
-        part: newProps.part,
-        currentType: newProps.part.sType,
-       });
-    }
-  }
-
+  partTypes = [{ id: 0, name: "" }, ...CommonValues.partTypes];
+  units = ['个', '件', '套', '根', '条', '箱']
 
   handleOk = () => {
     this.props.form.validateFields((err, values) => {
@@ -43,18 +34,14 @@ class DevicePartDialog extends React.Component {
             re => {
               console.log('post result: ', re.newId);
               message.info(re.message);
+              this.setState({
+                confirmLoading: false,
+              });
+              this.props.onDialogConfirm(values, re.newId);
             }
           ).catch(error => {
             message.error(error.message);
           });
-
-        console.log('Received values of form: ', values);
-        setTimeout(() => {
-          this.setState({
-            confirmLoading: false,
-          });
-          this.props.onDialogConfirm(values);
-        }, 1000);
       }
     });
   };
@@ -68,14 +55,24 @@ class DevicePartDialog extends React.Component {
     console.log("handleSubmit");
   };
 
+  checkSelectEmpty = (rule, value, callback) => {
+    if (value == 0) {
+      callback('请选择配件类别！');
+    } else {
+      callback();
+    }
+  };
+
 
   renderPrice(getFieldDecorator) {
-    if (this.state.currentType != 0) {
-      return (
-        <Form.Item label="单价" {...styles.formItem2Col}>
-        {getFieldDecorator("price")(<Input type='number' placeholder="请输入单价（单位：元）" />)}
+    // 暂不考虑添加大类，如果要加，后面补充
+    //if (this.state.currentType != 0) {
+    return (
+      <Form.Item label="单价" {...styles.formItem2Col}>
+        {getFieldDecorator("price")(
+        <InputNumber style={{ width: 160 }} placeholder="单价（元）" />)}
       </Form.Item>);
-    }
+    //}
   }
 
 
@@ -105,13 +102,13 @@ class DevicePartDialog extends React.Component {
 
             <Form.Item label="配件类别" {...styles.formItemLayout}>
               {getFieldDecorator("sType", {
-                rules: [{ required: true, message: "请选择配件类别！" }]
+                rules: [{ validator: this.checkSelectEmpty },{ required: true}]
               })(
                 <Select
                   style={{ width: 160 }}
                   onChange={value => this.setState({ currentType: value })}
                 >
-                  {this.props.partTypes.map(item => (
+                  {this.partTypes.map(item => (
                     <Select.Option value={item.id} key={item.id + ""}>
                       {item.name}
                     </Select.Option>
@@ -126,8 +123,23 @@ class DevicePartDialog extends React.Component {
               })(<Input placeholder="" />)}
             </Form.Item>
 
-            <Form.Item label="单位" {...styles.formItem2Col}>
-              {getFieldDecorator("unit")(<Input />)}
+            <Form.Item label="单位" {...styles.formItemLayout}>
+              {getFieldDecorator("unit")(
+                <Select
+                  showSearch
+                  style={{ width: 160 }}
+                  placeholder="选择配件单位"
+                  optionFilterProp="children"
+                >
+                  {
+                    this.units.map(item => (
+                      <Select.Option value={item} key={"unit_"+item}>
+                        {item}
+                      </Select.Option>
+                    ))
+                  }
+                </Select>
+              )}
             </Form.Item>
 
             {this.renderPrice(getFieldDecorator)}
@@ -138,7 +150,7 @@ class DevicePartDialog extends React.Component {
 
           </Form>
         </div>
-      </Modal>
+      </Modal >
     );
   }
 }

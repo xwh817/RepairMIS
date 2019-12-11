@@ -249,6 +249,15 @@ def getRepairItems(sid):
 
     return json_str
 
+def countRepairItems(sid):
+    sql = "select count(*) from t_repair_items where sid=%d" % sid
+    print(sql)
+    cursor.execute(sql)
+    count = cursor.fetchone()[0]
+    print('countRepairItems:', count)
+    return count
+
+
 
 def addOrUpdateRepairItem(json_str):
     try:
@@ -298,6 +307,9 @@ def addOrUpdateRepairItem(json_str):
 
 def deleteRepairItem(id):
     try:
+        if countRepairItems(id) > 0 :
+            raise Exception('删除失败！该类别下已有子类，请先清空子类。')
+        
         sql = "delete from t_repair_items where id=%d" % (id)
         print(sql)
         cursor.execute(sql)
@@ -366,6 +378,8 @@ addTestUsers('工程师3', '123', 4, '13112345566')
 '''
 
 #getUsers(0)
+
+#countRepairItems(1042)
 
 
 #dumpRepairItemsFromCVX()
