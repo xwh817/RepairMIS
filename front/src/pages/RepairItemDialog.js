@@ -52,7 +52,7 @@ class RepairItemDialog extends React.Component {
   };
 
   renderPrice(getFieldDecorator) {
-    if (this.state.currentType != 0) {
+    if (this.state.currentType !== 0) {
       return (
         <Form.Item label="工时标价" {...styles.formItem2Col}>
           {getFieldDecorator("price")(<Input type='number' placeholder="请输入标价（单位：元）" />)}

@@ -56,7 +56,7 @@ class UserInfoDialog extends React.Component {
   };
 
   checkSelectEmpty = (rule, value, callback) => {
-    if (value == 0) {
+    if (value === 0) {
       callback('请选择用户类别！');
     } else {
       callback();
@@ -65,7 +65,7 @@ class UserInfoDialog extends React.Component {
   
   renderPwd(getFieldDecorator) {
     console.log("userType: " + this.props.user.role);
-    if (this.state.currentType != 4) {
+    if (this.state.currentType !== CommonValues.TYPE_REPAIRMAN) {
       return (
         <Form.Item label="密码" {...styles.formItem2Col}>
           {getFieldDecorator("pwd", {

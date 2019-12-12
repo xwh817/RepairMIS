@@ -1,7 +1,7 @@
 import React from 'react';
 
 import {
-  Select, Table, Icon, Button, message, Input, Modal
+  Select, Table, Icon, Button, message, Modal
 } from 'antd';
 import ApiUtil from '../Utils/ApiUtil';
 import HttpUtil from '../Utils/HttpUtil';

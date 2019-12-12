@@ -4,13 +4,16 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
-import zh_CN from 'antd/lib/locale-provider/zh_CN';
-import { LocaleProvider } from 'antd';
+import zhCN from 'antd/es/locale/zh_CN';
+import { ConfigProvider } from 'antd';
+import moment from 'moment';
+import 'moment/locale/zh-cn';
+moment.locale('zh-cn');
 
 ReactDOM.render(
-  <LocaleProvider locale={zh_CN}>
+  <ConfigProvider locale={zhCN}>
     <App />
-  </LocaleProvider>,
+  </ConfigProvider>,
   document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change

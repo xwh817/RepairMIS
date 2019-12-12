@@ -11,6 +11,7 @@ import UserManager from "./pages/UserManager";
 import RepairItems from "./pages/RepairItems";
 import DeviceParts from "./pages/DeviceParts";
 import OrderManager from "./pages/OrderManager";
+import DataManager from "./pages/DataManager";
 
 const { Content, Footer, Sider } = Layout;
 
@@ -38,7 +39,7 @@ class App extends Component {
       case "5":
         return <OrderManager />;
       case "6":
-        return <OrderManager />;
+        return <DataManager />;
       default:
         return <BaseInfoPage/>
     }

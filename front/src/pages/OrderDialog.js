@@ -5,20 +5,28 @@ import {
   Input,
   InputNumber,
   Select,
-  message
+  TreeSelect,
+  message,
+  Divider
 } from "antd";
 import ApiUtil from "../Utils/ApiUtil";
 import HttpUtil from "../Utils/HttpUtil";
 import CommonValues from "../Utils/CommonValues";
 
-class DevicePartDialog extends React.Component {
+class OrderDialog extends React.Component {
+  initData() {
+    let data = this.props.repairItems.map(item => {
+      item.title = item.name;
+      item.value = item.id + "";
+    });
+    return this.props.repairItems;
+  }
   state = {
     confirmLoading: false,
-    currentType: this.props.part.sType,
+    repairItems: this.initData()
   };
 
   partTypes = [{ id: 0, name: "" }, ...CommonValues.partTypes];
-  units = ['个', '件', '套', '根', '条', '箱']
 
   handleOk = () => {
     this.props.form.validateFields((err, values) => {
@@ -30,16 +38,15 @@ class DevicePartDialog extends React.Component {
         });
 
         HttpUtil.post(ApiUtil.API_PART_UPDATE, values)
-          .then(
-            re => {
-              console.log('post result: ', re.newId);
-              message.info(re.message);
-              this.setState({
-                confirmLoading: false,
-              });
-              this.props.onDialogConfirm(values, re.newId);
-            }
-          ).catch(error => {
+          .then(re => {
+            console.log("post result: ", re.newId);
+            message.info(re.message);
+            this.setState({
+              confirmLoading: false
+            });
+            this.props.onDialogConfirm(values, re.newId);
+          })
+          .catch(error => {
             message.error(error.message);
           });
       }
@@ -57,24 +64,57 @@ class DevicePartDialog extends React.Component {
 
   checkSelectEmpty = (rule, value, callback) => {
     if (value === 0) {
-      callback('请选择配件类别！');
+      callback("请选择配件类别！");
     } else {
       callback();
     }
   };
 
+  genTreeNode = (parentId, isLeaf = false) => {
+    const random = Math.random()
+      .toString(36)
+      .substring(2, 6);
+    return {
+      id: random,
+      pId: parentId,
+      value: random,
+      title: isLeaf ? "Tree Node" : "Expand to load",
+      isLeaf
+    };
+  };
 
-  renderPrice(getFieldDecorator) {
-    // 暂不考虑添加大类，如果要加，后面补充
-    //if (this.state.currentType != 0) {
+  onLoadTreeData = treeNode =>
+    new Promise(resolve => {
+      const { id } = treeNode.props;
+      setTimeout(() => {
+        this.setState({
+          repairItems: this.state.repairItems.concat([
+            this.genTreeNode(id, false),
+            this.genTreeNode(id, true)
+          ])
+        });
+        resolve();
+      }, 300);
+    });
+
+  renderTreeSelect(getFieldDecorator) {
     return (
-      <Form.Item label="单价" {...styles.formItem2Col}>
-        {getFieldDecorator("price")(
-        <InputNumber style={{ width: 160 }} placeholder="单价（元）" />)}
-      </Form.Item>);
-    //}
+      <Form.Item label="维修项目" {...styles.formItemLayout}>
+        {getFieldDecorator("role")(
+          <TreeSelect
+            treeDataSimpleMode
+            style={{ width: 160 }}
+            value={this.state.value}
+            dropdownStyle={{ maxHeight: 400, overflow: "auto" }}
+            placeholder="添加维修项目"
+            onChange={value => this.setState({ value })}
+            loadData={this.onLoadTreeData}
+            treeData={this.state.repairItems}
+          />
+        )}
+      </Form.Item>
+    );
   }
-
 
   render() {
     // 受控组件，visible完全由props确定，不要既外面又自己，容易混乱。
@@ -83,7 +123,7 @@ class DevicePartDialog extends React.Component {
 
     return (
       <Modal
-        title={this.props.part.id > 0 ? "修改配件" : "添加新配件"}
+        title={this.props.order.id > 0 ? "修改订单" : "添加订单"}
         visible={this.props.visible}
         style={{ top: 20 }}
         width={800}
@@ -99,58 +139,26 @@ class DevicePartDialog extends React.Component {
             <Form.Item {...styles.formItem2Col}>
               {getFieldDecorator("id")(<Input type="hidden" />)}
             </Form.Item>
-
-            <Form.Item label="配件类别" {...styles.formItemLayout}>
-              {getFieldDecorator("sType", {
-                rules: [{ validator: this.checkSelectEmpty },{ required: true}]
-              })(
-                <Select
-                  style={{ width: 160 }}
-                  onChange={value => this.setState({ currentType: value })}
-                >
-                  {this.partTypes.map(item => (
-                    <Select.Option value={item.id} key={item.id + ""}>
-                      {item.name}
-                    </Select.Option>
-                  ))}
-                </Select>
-              )}
+            客户信息：
+            <Divider />
+            <Form.Item label="客户名" {...styles.formItem2Col}>
+              {getFieldDecorator("name", {
+                rules: [{ required: true, message: "请输入客户名！" }]
+              })(<Input placeholder="" />)}
             </Form.Item>
-
+            产品信息：
             <Form.Item label="配件名" {...styles.formItem2Col}>
               {getFieldDecorator("name", {
                 rules: [{ required: true, message: "请输入配件名！" }]
               })(<Input placeholder="" />)}
             </Form.Item>
-
-            <Form.Item label="单位" {...styles.formItemLayout}>
-              {getFieldDecorator("unit")(
-                <Select
-                  showSearch
-                  style={{ width: 160 }}
-                  placeholder="选择配件单位"
-                  optionFilterProp="children"
-                >
-                  {
-                    this.units.map(item => (
-                      <Select.Option value={item} key={"unit_"+item}>
-                        {item}
-                      </Select.Option>
-                    ))
-                  }
-                </Select>
-              )}
-            </Form.Item>
-
-            {this.renderPrice(getFieldDecorator)}
-
+            {this.renderTreeSelect(getFieldDecorator)}
             <Form.Item label="备注" {...styles.formItem2Col}>
               {getFieldDecorator("remarks")(<Input />)}
             </Form.Item>
-
           </Form>
         </div>
-      </Modal >
+      </Modal>
     );
   }
 }
@@ -182,11 +190,11 @@ const objToForm = obj => {
 const mForm = Form.create({
   name: "infoForm",
   mapPropsToFields(props) {
-    if (!props.part) {
+    if (!props.order) {
       return;
     }
-    return objToForm(props.part);
+    return objToForm(props.order);
   }
-})(DevicePartDialog);
+})(OrderDialog);
 
 export default mForm;

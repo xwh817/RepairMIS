@@ -5,10 +5,11 @@
 export default class CommonValues {
     static JOBS = [];
 
+    static TYPE_REPAIRMAN = 4;
     static userTypes = [
         { id: 1, name: "系统管理员" },
         { id: 2, name: "出单员" },
-        { id: 4, name: "工程师" }
+        { id: this.TYPE_REPAIRMAN, name: "服务工程师" }
     ];
 
     static partTypes = [

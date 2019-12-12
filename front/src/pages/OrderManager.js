@@ -5,6 +5,7 @@ import {
 } from 'antd';
 import ApiUtil from '../Utils/ApiUtil';
 import HttpUtil from '../Utils/HttpUtil';
+import OrderDialog from "./OrderDialog";
 
 
 export default class OrderManger extends React.Component {
@@ -33,10 +34,10 @@ export default class OrderManger extends React.Component {
     title: '编辑',
     align: 'center',
     width: 160,
-    render: (repairOrder) => (
+    render: (item) => (
       <span>
-        <Icon type="edit" title="编辑" onClick={() => this.showUpdateDialog(repairOrder)} />
-        <Icon type="close" title="删除" style={{ color: '#ee6633', marginLeft: 20 }} onClick={() => this.deleteConfirm(repairOrder)} />
+        <Icon type="edit" title="编辑" onClick={() => this.showDialog(item)} />
+        <Icon type="close" title="删除" style={{ color: '#ee6633', marginLeft: 20 }} onClick={() => this.deleteConfirm(item)} />
       </span>
     ),
   }];
@@ -44,7 +45,7 @@ export default class OrderManger extends React.Component {
   state = {
     repairItems: [],
     repairStaffs: [],
-    repairOrder: {},
+    currentItem: {},
     orderList: [],
     showInfoDialog: false,
   };
@@ -95,6 +96,21 @@ export default class OrderManger extends React.Component {
     console.log(date, dateString);
   }
 
+  
+  renderDialog(){
+    if (this.state.showInfoDialog) {
+      return (
+        <OrderDialog
+          visible={this.state.showInfoDialog}
+          order={this.state.currentItem}
+          repairItems={this.state.repairItems}
+          onClose={() => this.setState({ showInfoDialog: false })}
+          onDialogConfirm={this.onDialogConfirm}
+        />
+      );
+    }
+  }
+
 
   render() {
     return (
@@ -109,10 +125,10 @@ export default class OrderManger extends React.Component {
             {this.state.repairStaffs.map(item => <Select.Option value={item.id} key={item.id + ''}>{item.name}</Select.Option>)}
           </Select>
           <Input placeholder="客户名" item="name" prefix={<Icon type="user" style={styles.prefixIcon} />} style={styles.searchItem} onChange={this.handleTextChange} />
-          <DatePicker.RangePicker style={{ width: 240, marginRight: 6 }} onChange={this.handleDataChange} />
+          <DatePicker.RangePicker format={'YYYY.MM.DD'} style={{ width: 220, marginRight: 6 }} onChange={this.handleDataChange} />
 
           <Button type="primary" icon="search" onClick={this.handleSearch}>搜索</Button>
-          <Button type="primary" icon="plus" onClick={() => this.showUpdateDialog()} style={{ float: 'right', marginTop: 4 }}>添加</Button>
+          <Button type="primary" icon="plus" onClick={() => this.showDialog()} style={{ float: 'right', marginTop: 4 }}>添加</Button>
         </div>
         <Table
           style={{ marginTop: 10 }}
@@ -121,26 +137,28 @@ export default class OrderManger extends React.Component {
           columns={this.columns}
           pagination={false} />
 
-        <Modal
-          title={this.state.repairOrder.id ? "修改订单" : "添加订单"}
-          okText="保存"
-          cancelText="取消"
-          visible={this.state.showInfoDialog}
-          onOk={this.handleAdd}
-          onCancel={() => this.setState({ showInfoDialog: false })}>
-          <Input type='text'
-            onChange={this.handleTextChanged}
-            value={this.state.repairOrder.name}
-            placeholder="客户名" />
-
-        </Modal>
+        {this.renderDialog()}
       </div>
     )
   }
 
-  showUpdateDialog = (repairOrder) => {
-
-  }
+  
+  showDialog = item => {
+    let currentItem = item;
+    if (item === undefined) {
+      currentItem = {
+        id: 0,
+        name: '',
+        role: this.currentType,
+        pwd: '',
+        phone: ''
+      };
+    }
+    this.setState({
+      currentItem: currentItem,
+      showInfoDialog: true
+    });
+  };
 
 }
 
