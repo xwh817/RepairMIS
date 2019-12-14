@@ -14,10 +14,9 @@ import CommonValues from "../Utils/CommonValues";
 class DevicePartDialog extends React.Component {
   state = {
     confirmLoading: false,
-    currentType: this.props.part.sType,
+    currentType: this.props.part.sid,
   };
 
-  partTypes = [{ id: 0, name: "" }, ...CommonValues.partTypes];
   units = ['个', '件', '套', '根', '条', '箱']
 
   handleOk = () => {
@@ -55,25 +54,13 @@ class DevicePartDialog extends React.Component {
     console.log("handleSubmit");
   };
 
-  checkSelectEmpty = (rule, value, callback) => {
-    if (value === 0) {
-      callback('请选择配件类别！');
-    } else {
-      callback();
-    }
-  };
-
-
-  renderPrice(getFieldDecorator) {
-    // 暂不考虑添加大类，如果要加，后面补充
-    //if (this.state.currentType != 0) {
-    return (
-      <Form.Item label="单价" {...styles.formItem2Col}>
-        {getFieldDecorator("price")(
-        <InputNumber style={{ width: 160 }} placeholder="单价（元）" />)}
-      </Form.Item>);
-    //}
-  }
+  /*   checkSelectEmpty = (rule, value, callback) => {
+      if (value === 0) {
+        callback('请选择配件类别！');
+      } else {
+        callback();
+      }
+    }; */
 
 
   render() {
@@ -101,14 +88,14 @@ class DevicePartDialog extends React.Component {
             </Form.Item>
 
             <Form.Item label="配件类别" {...styles.formItemLayout}>
-              {getFieldDecorator("sType", {
-                rules: [{ validator: this.checkSelectEmpty },{ required: true}]
+              {getFieldDecorator("sid", {
+                rules: [{ required: true }]
               })(
                 <Select
                   style={{ width: 160 }}
                   onChange={value => this.setState({ currentType: value })}
                 >
-                  {this.partTypes.map(item => (
+                  {this.props.itemTypes.map(item => (
                     <Select.Option value={item.id} key={item.id + ""}>
                       {item.name}
                     </Select.Option>
@@ -123,30 +110,40 @@ class DevicePartDialog extends React.Component {
               })(<Input placeholder="" />)}
             </Form.Item>
 
-            <Form.Item label="单位" {...styles.formItemLayout}>
-              {getFieldDecorator("unit")(
-                <Select
-                  showSearch
-                  style={{ width: 160 }}
-                  placeholder="选择配件单位"
-                  optionFilterProp="children"
-                >
-                  {
-                    this.units.map(item => (
-                      <Select.Option value={item} key={"unit_"+item}>
-                        {item}
-                      </Select.Option>
-                    ))
-                  }
-                </Select>
-              )}
-            </Form.Item>
+            {this.state.currentType !== 0 &&
+              <Form.Item label="单位" {...styles.formItemLayout}>
+                {getFieldDecorator("unit")(
+                  <Select
+                    showSearch
+                    style={{ width: 160 }}
+                    placeholder="选择配件单位"
+                    optionFilterProp="children"
+                  >
+                    {
+                      this.units.map(item => (
+                        <Select.Option value={item} key={"unit_" + item}>
+                          {item}
+                        </Select.Option>
+                      ))
+                    }
+                  </Select>
+                )}
+              </Form.Item>
+            }
 
-            {this.renderPrice(getFieldDecorator)}
+            {this.state.currentType !== 0 &&
+              <Form.Item label="单价" {...styles.formItem2Col}>
+                {getFieldDecorator("price")(
+                  <InputNumber style={{ width: 160 }} placeholder="单价（元）" />)}
+              </Form.Item>
+            }
 
-            <Form.Item label="备注" {...styles.formItem2Col}>
-              {getFieldDecorator("remarks")(<Input />)}
-            </Form.Item>
+
+            {this.state.currentType !== 0 &&
+              <Form.Item label="备注" {...styles.formItem2Col}>
+                {getFieldDecorator("remarks")(<Input />)}
+              </Form.Item>
+            }
 
           </Form>
         </div>

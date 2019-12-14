@@ -1,7 +1,7 @@
 import React from 'react';
 
 import {
-  Select, Table, Icon, Button, message, Modal
+  Table, Icon, Button, message, Breadcrumb, Modal
 } from 'antd';
 import ApiUtil from '../Utils/ApiUtil';
 import HttpUtil from '../Utils/HttpUtil';
@@ -17,7 +17,7 @@ export default class RepairItems extends React.Component {
   },
   {
     title: '维修项目',
-    dataIndex: 'name',
+    render: item => <span style={{ cursor: "pointer" }} onClick={() => this.onItemClick(item)}>{item.name}</span>
   }, {
     title: '工时标价',
     dataIndex: 'price',
@@ -81,7 +81,7 @@ export default class RepairItems extends React.Component {
           }
           message.info(re.message);
           let items = ArrayUtil.deleteItem(this.state.mItems, id);
-          this.setState({mItems: items});
+          this.setState({ mItems: items });
         }
       ).catch(error => {
         message.error(error.message);
@@ -90,9 +90,15 @@ export default class RepairItems extends React.Component {
 
   componentDidMount() {
     this.getData(this.currentType);
+
+    /* window.addEventListener("popstate", function () {
+      //doSomething
+      console.log("window back");
+      return false;
+    }, false) */
   }
 
-  renderDialog(){
+  renderDialog() {
     if (this.state.showInfoDialog) {
       return (
         <RepairItemDialog
@@ -106,31 +112,72 @@ export default class RepairItems extends React.Component {
     }
   }
 
+  getTypeName(id) {
+    for (let i = 0; i < this.state.mTypes.length; i++) {
+      let item = this.state.mTypes[i];
+      if (item.id === id) {
+        return item.name;
+        break;
+      }
+    }
+  }
+
+  renderBreadcrumb() {
+    let style = { display: 'inline-block', fontSize: '16px', cursor: "pointer", color: '#1890ff' };
+    if (this.currentType == 0) {
+      return (<Breadcrumb style={style}>
+        <Breadcrumb.Item>项目大类</Breadcrumb.Item></Breadcrumb>);
+    } else {
+      return (<Breadcrumb style={style}>
+        <Breadcrumb.Item onClick={() => this.handleFilterChange(0)}>
+          <Icon type='left' style={{ marginRight: '6px' }} />
+          项目大类
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>{this.getTypeName(this.currentType)}</Breadcrumb.Item>
+      </Breadcrumb>);
+    }
+  }
+
+  renderColumns() {
+    if (this.currentType === 0) {
+      let array = [...this.columns];
+      array.splice(2, 2);
+      return array;
+    } else {
+      return this.columns;
+    }
+  }
+
   render() {
     return (
       <div>
 
-        <div>
-          <Select style={{ width: 240, marginRight: 20, marginTop: 4 }}
-            defaultValue={this.currentType}
-            onChange={this.handleFilterChange}>
-            {this.state.mTypes.map((item) => <Select.Option value={item.id} key={item.id + ''}>{item.name}</Select.Option>)}
-          </Select>
+        <div style={{ display: 'flex', paddingTop: 10, alignItems: 'center' }}>
+          {this.renderBreadcrumb()}
 
-          <Button type="primary" icon="plus" onClick={() => this.showUpdateDialog()} style={{ float: 'right', marginTop: 4 }}>添加</Button>
+          <Button type="primary" icon="plus" onClick={() => this.showUpdateDialog()} style={{ marginLeft: 'auto' }}>添加</Button>
         </div>
 
         <Table
           style={{ marginTop: 10 }}
           dataSource={this.state.mItems}
           rowKey={item => item.id}
-          columns={this.columns}
+          columns={this.renderColumns()}
           pagination={false} />
 
         {this.renderDialog()}
 
       </div>
     )
+  }
+
+  // 点击行
+  onItemClick = item => {
+    if (this.currentType == 0) {
+      this.handleFilterChange(item.id);
+    } else {
+      this.showUpdateDialog(item);
+    }
   }
 
   onDialogConfirm = (repairItem, newId) => {
@@ -145,17 +192,30 @@ export default class RepairItems extends React.Component {
         mItems: datas
       });
     } else {    // 新增
-      repairItem.id = newId;
-      repairItem.index = this.state.mItems.length+1;
-      let datas = [...this.state.mItems];
-      datas.push(repairItem);
-      this.setState({
-        mItems: datas
-      });
+      // 如果不在当前类别下就刷新，不然就在当前页动态添加。
+      if (part.sid != this.currentType) {
+        this.handleFilterChange(part.sid)
+      } else {
+        repairItem.id = newId;
+        repairItem.index = this.state.mItems.length + 1;
+        let datas = [...this.state.mItems];
+        datas.push(repairItem);
+        this.setState({
+          mItems: datas
+        });
+        if (repairItem.sid === 0) {
+          let types = [...this.state.mTypes];
+          types.push(repairItem);
+          this.setState({
+            mTypes: types
+          })
+        }
+      }
     }
   }
 
   handleFilterChange = (type) => {
+    console.log('change Type:' + type)
     this.currentType = type;
     this.getData(type)
   }

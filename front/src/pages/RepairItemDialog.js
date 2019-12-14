@@ -51,16 +51,6 @@ class RepairItemDialog extends React.Component {
     console.log("handleSubmit");
   };
 
-  renderPrice(getFieldDecorator) {
-    if (this.state.currentType !== 0) {
-      return (
-        <Form.Item label="工时标价" {...styles.formItem2Col}>
-          {getFieldDecorator("price")(<Input type='number' placeholder="请输入标价（单位：元）" />)}
-        </Form.Item>);
-    }
-  }
-
-
   render() {
     // 受控组件，visible完全由props确定，不要既外面又自己，容易混乱。
     //console.log('dialog render: ' + user.name + "," + visible);
@@ -108,11 +98,18 @@ class RepairItemDialog extends React.Component {
               })(<Input placeholder="" />)}
             </Form.Item>
 
-            {this.renderPrice(getFieldDecorator)}
 
-            <Form.Item label="备注" {...styles.formItem2Col}>
-              {getFieldDecorator("remarks")(<Input />)}
-            </Form.Item>
+            {this.state.currentType !== 0 &&
+              <Form.Item label="工时标价" {...styles.formItem2Col}>
+                {getFieldDecorator("price")(<Input type='number' placeholder="请输入标价（单位：元）" />)}
+              </Form.Item>
+            }
+
+            {this.state.currentType !== 0 &&
+              <Form.Item label="备注" {...styles.formItem2Col}>
+                {getFieldDecorator("remarks")(<Input />)}
+              </Form.Item>
+            }
 
           </Form>
         </div>

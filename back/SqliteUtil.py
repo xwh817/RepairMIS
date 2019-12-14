@@ -26,7 +26,7 @@ def createTables():
             unit CHAR(2),
             price NUMERIC,
             remarks VARCHAR(200),
-            sType SMALLINT
+            sid SMALLINT
             )'''
         sql_create_t_repair_items = '''CREATE TABLE IF NOT EXISTS t_repair_items(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -119,11 +119,7 @@ def deleteUser(id):
 
 
 def getParts(type):
-
-    sql = "select * from t_parts"
-    if type > 0:
-        sql += (' where sType=%d' % type)
-
+    sql = "select * from t_parts where sid=%d" % type
     print(sql)
 
     cursor.execute(sql)
@@ -137,7 +133,7 @@ def getParts(type):
             'unit': item[2], 
             'price': item[3], 
             'remarks': item[4], 
-            'sType': item[5], 
+            'sid': item[5], 
         }
         parts.append(part)
 
@@ -146,23 +142,40 @@ def getParts(type):
 
     return json_str
 
+def countPartItems(sid):
+    sql = "select count(*) from t_parts where sid=%d" % sid
+    print(sql)
+    cursor.execute(sql)
+    count = cursor.fetchone()[0]
+    print('countPartItems:', count)
+    return count
+
+
+def addPartSuper(id, name):
+    keys = 'id, name, sid'
+    values = "%d, '%s', %d" %(id, name, 0)
+    sql = "insert into t_parts(%s) VALUES(%s)" % (keys, values)
+    print(sql)
+    cursor.execute(sql)
+    conn.commit()   # 提交更新，不然没有保存。
 
 def addPart(name, unit, price, remarks, t):
     if price=='':
         price = '0'
-    keys = 'name, unit, price, remarks, sType'
+    keys = 'name, unit, price, remarks, sid'
     values = "'%s','%s',%s,'%s',%s" %(name, unit, price, remarks, t)
     sql = "insert into t_parts(%s) VALUES(%s)" % (keys, values)
     #print(sql)
     cursor.execute(sql)
     conn.commit()   # 提交更新，不然没有保存。
 
+
 def addOrUpdatePart(json_str):
     try:
         print(json_str)
         part = json.loads(json_str)
         id = part.get('id', 0)
-        sType = part.get('sType', 0)
+        sid = part.get('sid', 0)
         name = part.get('name', '')
         unit = part.get('unit', '')
         price = part.get('price', 0)
@@ -171,8 +184,8 @@ def addOrUpdatePart(json_str):
         newId = id
 
         if id == 0:  # 新增
-            keys = 'name, unit, price, remarks, sType'
-            values = "'%s','%s',%s,'%s',%s" %(name, unit, price, remarks, sType)
+            keys = 'name, unit, price, remarks, sid'
+            values = "'%s','%s',%s,'%s',%s" %(name, unit, price, remarks, sid)
             sql = "insert into t_parts(%s) VALUES(%s)" % (keys, values)
             print(sql)
             cursor.execute(sql)
@@ -180,7 +193,7 @@ def addOrUpdatePart(json_str):
             newId = cursor.lastrowid
             print(result, "newId:", newId)
         else:   # 修改
-            update = "name='%s', unit='%s', price=%d, remarks='%s', sType=%d" %(name, unit, price, remarks, sType)
+            update = "name='%s', unit='%s', price=%d, remarks='%s', sid=%d" %(name, unit, price, remarks, sid)
             where = "where id=" + str(id)
             sql = "update t_parts set %s %s" % (update, where)
             print(sql)
@@ -206,6 +219,9 @@ def addOrUpdatePart(json_str):
 
 def deletePart(id):
     try:
+        if countPartItems(id) > 0 :
+            raise Exception('删除失败！该类别下已有子类，请先清空子类。')
+
         sql = "delete from t_parts where id=%d" % (id)
         print(sql)
         cursor.execute(sql)
@@ -385,8 +401,20 @@ addTestUsers('工程师3', '123', 4, '13112345566')
 #dumpRepairItemsFromCVX()
 #getRepairItems(0)
 
-#dumpFromCVX()
+'''
+sql = "drop table t_parts"
+print(sql)
+cursor.execute(sql)
+conn.commit()
+
+addPartSuper(1, "电器部分")
+addPartSuper(2, "液压部分")
+addPartSuper(3, "其他易损件部分")
+
+dumpPartsFromCVX()
+'''
 #getParts()
+
 
 # addOrUpdateJob('{"name": "test23", "index": 8}')
 # addOrUpdateJob('{"name": "test23", "id": 8, "index": 8}')

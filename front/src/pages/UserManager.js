@@ -117,7 +117,7 @@ export default class UserManager extends React.Component {
 
   render() {
     return (
-      <div>
+      <div style={{paddingTop:12}}>
         <div>
           <Select
             style={{ width: 240, marginRight: 20, marginTop: 4 }}

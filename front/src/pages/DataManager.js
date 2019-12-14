@@ -30,10 +30,13 @@ export default class DataManager extends React.Component {
     }
 
     render() {
-        return <div style={{ marginTop: 24, }}>
+        let style = {display:'block', marginTop:'24px'};
+        return <div style={{ padding: 24}}>
             <Button type="dashed" icon="export" onClick={this.exportData} >导出数据</Button>
 
-            {this.state.showDownload && <Button type="primary" icon="download" href={ApiUtil.URL_IP + ApiUtil.API_FILE_GET_BACKUP} style={{ marginLeft: 24}}>下载数据</Button>}
+            <Button type="dashed" icon="download" style={style}>下载所有订单数据</Button>
+            <Button type="dashed" icon="download" style={style}>下载所有维修项目数据</Button>
+            <Button type="dashed" icon="download" style={style}>下载所有配件数据</Button>
         </div>
     }
 

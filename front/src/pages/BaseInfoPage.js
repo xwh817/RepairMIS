@@ -11,7 +11,7 @@ export default class BaseInfoPage extends React.Component {
   }
   render() {
     return (
-      <div>
+      <div style={{paddingTop: 36}}>
         <Card
           size="large"
           title="门店信息"

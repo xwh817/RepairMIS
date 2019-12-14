@@ -47,10 +47,10 @@ class App extends Component {
 
   menus = [
     { key: "1", title: "门店信息", icon: "home" },
+    { key: "5", title: "维修单", icon: "account-book" },
     { key: "2", title: "用户管理", icon: "team" },
     { key: "3", title: "维修项目", icon: "tool" },
     { key: "4", title: "配件", icon: "setting" },
-    { key: "5", title: "维修单", icon: "account-book" },
     { key: "6", title: "数据备份", icon: "database" }
   ];
 
@@ -100,7 +100,7 @@ class App extends Component {
         <Layout>
           {/* <Header style={{ margin: '0 16px', background: '#fff', padding: 0 }} /> */}
           <Content style={{ margin: "12px 12px" }}>
-            <div style={{ padding: 24, background: "#fff", minHeight: 620 }}>
+            <div style={{ paddingLeft: 24, paddingRight: 24, background: "#fff", minHeight: 620 }}>
               {this.getPageByMenu()}
             </div>
           </Content>

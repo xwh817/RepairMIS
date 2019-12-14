@@ -114,7 +114,7 @@ export default class OrderManger extends React.Component {
 
   render() {
     return (
-      <div>
+      <div style={{paddingTop: 16}}>
         <div>
           <Input placeholder="订单号" item="id" prefix={<Icon type="account-book" style={styles.prefixIcon} />} style={styles.searchItem} onChange={this.handleTextChange} />
 
