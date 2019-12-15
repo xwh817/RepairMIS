@@ -30,13 +30,13 @@ export default class DataManager extends React.Component {
     }
 
     render() {
-        let style = {display:'block', marginTop:'24px'};
-        return <div style={{ padding: 24}}>
-            <Button type="dashed" icon="export" onClick={this.exportData} >导出数据</Button>
-
-            <Button type="dashed" icon="download" style={style}>下载所有订单数据</Button>
-            <Button type="dashed" icon="download" style={style}>下载所有维修项目数据</Button>
-            <Button type="dashed" icon="download" style={style}>下载所有配件数据</Button>
+        let style = { display: 'inline-block', marginTop: '24px' };
+        return <div>
+            <div style={{ margin: '0 auto', width: 300, paddingTop:24 }}>
+                <Button type="dashed" icon="download" style={style}>下载所有订单数据</Button>
+                <Button type="dashed" icon="download" style={style}>下载所有维修项目数据</Button>
+                <Button type="dashed" icon="download" style={style}>下载所有配件数据</Button>
+            </div>
         </div>
     }
 

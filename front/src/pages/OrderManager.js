@@ -116,6 +116,8 @@ export default class OrderManger extends React.Component {
     return (
       <div style={{paddingTop: 16}}>
         <div>
+          <DatePicker.RangePicker format={'YYYY.MM.DD'} style={{ width: 230, marginRight: 6 }} onChange={this.handleDataChange} />
+
           <Input placeholder="订单号" item="id" prefix={<Icon type="account-book" style={styles.prefixIcon} />} style={styles.searchItem} onChange={this.handleTextChange} />
 
           <Select placeholder="维修项目" style={styles.select} onChange={this.handleFilterChange}>
@@ -125,8 +127,7 @@ export default class OrderManger extends React.Component {
             {this.state.repairStaffs.map(item => <Select.Option value={item.id} key={item.id + ''}>{item.name}</Select.Option>)}
           </Select>
           <Input placeholder="客户名" item="name" prefix={<Icon type="user" style={styles.prefixIcon} />} style={styles.searchItem} onChange={this.handleTextChange} />
-          <DatePicker.RangePicker format={'YYYY.MM.DD'} style={{ width: 220, marginRight: 6 }} onChange={this.handleDataChange} />
-
+          
           <Button type="primary" icon="search" onClick={this.handleSearch}>搜索</Button>
           <Button type="primary" icon="plus" onClick={() => this.showDialog()} style={{ float: 'right', marginTop: 4 }}>添加</Button>
         </div>

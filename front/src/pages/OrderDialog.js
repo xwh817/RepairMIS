@@ -18,6 +18,7 @@ class OrderDialog extends React.Component {
     let data = this.props.repairItems.map(item => {
       item.title = item.name;
       item.value = item.id + "";
+      item.selectable = false;
     });
     return this.props.repairItems;
   }
@@ -70,32 +71,25 @@ class OrderDialog extends React.Component {
     }
   };
 
-  genTreeNode = (parentId, isLeaf = false) => {
-    const random = Math.random()
-      .toString(36)
-      .substring(2, 6);
+  genTreeNode = (parentId, item) => {
     return {
-      id: random,
+      id: item.id,
       pId: parentId,
-      value: random,
-      title: isLeaf ? "Tree Node" : "Expand to load",
-      isLeaf
+      value: item.id + "",
+      title: item.name,
+      isLeaf: true
     };
   };
 
-  onLoadTreeData = treeNode =>
-    new Promise(resolve => {
-      const { id } = treeNode.props;
-      setTimeout(() => {
-        this.setState({
-          repairItems: this.state.repairItems.concat([
-            this.genTreeNode(id, false),
-            this.genTreeNode(id, true)
-          ])
-        });
-        resolve();
-      }, 300);
+  onLoadTreeData = treeNode => {
+    let id = treeNode.props.id;
+    return HttpUtil.get(ApiUtil.API_GET_REPAIR_ITEMS + id).then(date => {
+      let items = date.map(item => this.genTreeNode(id, item));
+      this.setState({
+        repairItems: this.state.repairItems.concat(items)
+      });
     });
+  }
 
   renderTreeSelect(getFieldDecorator) {
     return (
@@ -103,11 +97,12 @@ class OrderDialog extends React.Component {
         {getFieldDecorator("role")(
           <TreeSelect
             treeDataSimpleMode
-            style={{ width: 160 }}
+            style={{ width: 250 }}
             value={this.state.value}
             dropdownStyle={{ maxHeight: 400, overflow: "auto" }}
             placeholder="添加维修项目"
-            onChange={value => this.setState({ value })}
+            onChange={value => {console.log("onChange");this.setState({ value });}}
+            onSelect={()=> console.log("onSelect")}
             loadData={this.onLoadTreeData}
             treeData={this.state.repairItems}
           />
@@ -140,16 +135,15 @@ class OrderDialog extends React.Component {
               {getFieldDecorator("id")(<Input type="hidden" />)}
             </Form.Item>
             客户信息：
-            <Divider />
             <Form.Item label="客户名" {...styles.formItem2Col}>
               {getFieldDecorator("name", {
                 rules: [{ required: true, message: "请输入客户名！" }]
               })(<Input placeholder="" />)}
             </Form.Item>
             产品信息：
-            <Form.Item label="配件名" {...styles.formItem2Col}>
+            <Form.Item label="型号" {...styles.formItem2Col}>
               {getFieldDecorator("name", {
-                rules: [{ required: true, message: "请输入配件名！" }]
+                rules: [{ required: true, message: "请输入型号！" }]
               })(<Input placeholder="" />)}
             </Form.Item>
             {this.renderTreeSelect(getFieldDecorator)}
