@@ -83,6 +83,17 @@ def deleteRepairItem(id):
     return re
 
 
+@app.route(apiPrefix + 'getStore/<int:id>')
+def getStore(id):
+    return DBUtil.getStore(id)
+
+@app.route(apiPrefix + 'updateStore', methods=['POST'])
+def updateStore():
+    data = request.get_data(as_text=True)
+    re = DBUtil.updateStore(data)
+    return json.dumps(re)
+
+
 
 
 # if __name__ == '__main__': 确保服务器只会在该脚本被 Python 解释器直接执行的时候才会运行，而不是作为模块导入的时候。

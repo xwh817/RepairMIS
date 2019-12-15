@@ -35,9 +35,17 @@ def createTables():
             price NUMERIC,
             remarks VARCHAR(200)
             )'''
+        sql_create_t_store = '''CREATE TABLE IF NOT EXISTS t_store(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name VARCHAR(100) NOT NULL,
+            address VARCHAR(200),
+            user VARCHAR(20) NOT NULL,
+            phone VARCHAR(20) NOT NULL
+            )'''
         cursor.execute(sql_create_t_user)
         cursor.execute(sql_create_t_parts)
         cursor.execute(sql_create_t_repair_items)
+        cursor.execute(sql_create_t_store)
     except Exception as e:
         print(repr(e))
 
@@ -351,8 +359,51 @@ def addRepairItem(id, name, sid, price):
     #print(sql)
     cursor.execute(sql)
     conn.commit()   # 提交更新，不然没有保存。
-       
-       
+
+def getStore(id):
+    sql = "select * from t_store where id=%d" % id
+    print(sql)
+    cursor.execute(sql)
+    item = cursor.fetchone()
+    store = {
+        'id': item[0],
+        'name': item[1],
+        'address': item[2], 
+        'user': item[3], 
+        'phone': item[4],
+    }
+    json_str = json.dumps(store)
+    return json_str
+
+def updateStore(json_str):
+    try:
+        store = json.loads(json_str)
+        id = store.get('id', 0)
+        name = store.get('name', '')
+        address = store.get('address', '')
+        user = store.get('user', '')
+        phone = store.get('phone', '')
+        update = "name='%s', address='%s', user='%s', phone='%s'" %(name, address, user, phone)
+        where = "where id=" + str(id)
+        sql = "update t_store set %s %s" % (update, where)
+        print(sql)
+        cursor.execute(sql)
+        conn.commit()
+        result = '更新成功'
+        re = {
+                'code': 0,
+                'message': result
+            }
+        return re
+    except Exception as e:
+        print(repr(e))
+        re = {
+            'code': -1,
+            'message': repr(e)
+        }
+        return re
+
+
 def dumpPartsFromCVX():
     try:
         with open('parts.csv', encoding='gb2312') as f:
@@ -384,7 +435,11 @@ def dumpRepairItemsFromCVX():
         print(repr(e))
         return json.dumps({'code': -1, 'message': repr(e)})
 
+
+
+
 #createTables()
+
 '''
 addTestUsers('Admin', '123', 1, '13112345566')
 addTestUsers('Operator', '123', 2, '13112345566')
@@ -415,6 +470,11 @@ dumpPartsFromCVX()
 '''
 #getParts()
 
+""" 
+sql = "insert into t_store values(1, '荆州市砼盟工程设备有限公司', '荆州市沙市区东方大道延伸路', '--', '123')"
+cursor.execute(sql)
+conn.commit() 
+"""
 
 # addOrUpdateJob('{"name": "test23", "index": 8}')
 # addOrUpdateJob('{"name": "test23", "id": 8, "index": 8}')

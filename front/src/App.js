@@ -6,7 +6,7 @@ import myIcon from "./images/icon.jpg";
 
 import { Layout, Menu, Icon, Avatar } from "antd";
 
-import BaseInfoPage from "./pages/BaseInfoPage";
+import StorePage from "./pages/StorePage";
 import UserManager from "./pages/UserManager";
 import RepairItems from "./pages/RepairItems";
 import DeviceParts from "./pages/DeviceParts";
@@ -29,7 +29,7 @@ class App extends Component {
   getPageByMenu() {
     switch (this.state.currentPage) {
       case "1":
-        return <BaseInfoPage />;
+        return <StorePage />;
       case "2":
         return <UserManager />;
       case "3":
@@ -41,7 +41,7 @@ class App extends Component {
       case "6":
         return <DataManager />;
       default:
-        return <BaseInfoPage/>
+        return <StorePage/>
     }
   }
 

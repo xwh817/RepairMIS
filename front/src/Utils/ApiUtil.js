@@ -17,4 +17,8 @@ export default class ApiUtil {
     static API_REPAIR_ITEM_UPDATE = ApiUtil.URL_ROOT + '/updateRepairItem';
     static API_REPAIR_ITEM_DELETE = ApiUtil.URL_ROOT + '/deleteRepairItem/';
 
+
+    static API_GET_STORE = ApiUtil.URL_ROOT + '/getStore/';
+    static API_STORE_UPDATE = ApiUtil.URL_ROOT + '/updateStore';
+    
 }
