@@ -193,8 +193,8 @@ export default class RepairItems extends React.Component {
       });
     } else {    // 新增
       // 如果不在当前类别下就刷新，不然就在当前页动态添加。
-      if (part.sid != this.currentType) {
-        this.handleFilterChange(part.sid)
+      if (repairItem.sid != this.currentType) {
+        this.handleFilterChange(repairItem.sid)
       } else {
         repairItem.id = newId;
         repairItem.index = this.state.mItems.length + 1;

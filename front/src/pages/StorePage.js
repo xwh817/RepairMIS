@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Button } from "antd";
+import { Card, Button, message } from "antd";
 import ApiUtil from "../Utils/ApiUtil";
 import HttpUtil from "../Utils/HttpUtil";
 import StoreDialog from "./StoreDialog";

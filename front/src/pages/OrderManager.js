@@ -50,6 +50,12 @@ export default class OrderManger extends React.Component {
     showInfoDialog: false,
   };
 
+  deviceTypes = [
+    {id:1, name: '三一重工'},
+    {id:2, name: '2222'},
+    {id:3, name: '3333'}
+  ];
+
 
   componentDidMount() {
     this.getData();
@@ -116,12 +122,16 @@ export default class OrderManger extends React.Component {
     return (
       <div style={{paddingTop: 16}}>
         <div>
-          <DatePicker.RangePicker format={'YYYY.MM.DD'} style={{ width: 230, marginRight: 6 }} onChange={this.handleDataChange} />
+          <DatePicker.RangePicker format={'YYYY.MM.DD'} style={{ width: 220, marginRight: 6 }} onChange={this.handleDataChange} />
 
           <Input placeholder="订单号" item="id" prefix={<Icon type="account-book" style={styles.prefixIcon} />} style={styles.searchItem} onChange={this.handleTextChange} />
 
-          <Select placeholder="维修项目" style={styles.select} onChange={this.handleFilterChange}>
+          {/* <Select placeholder="维修项目" style={styles.select} onChange={this.handleFilterChange}>
             {this.state.repairItems.map(item => <Select.Option value={item.id} key={item.id + ''}>{item.name}</Select.Option>)}
+          </Select> */}
+          
+          <Select placeholder="型号" style={styles.select} onChange={this.handleFilterChange}>
+            {this.deviceTypes.map(item => <Select.Option value={item.id} key={item.id + ''}>{item.name}</Select.Option>)}
           </Select>
           <Select placeholder="服务工程师" style={styles.select} onChange={this.handleFilterChange}>
             {this.state.repairStaffs.map(item => <Select.Option value={item.id} key={item.id + ''}>{item.name}</Select.Option>)}
@@ -166,12 +176,12 @@ export default class OrderManger extends React.Component {
 
 const styles = {
   select: {
-    width: 160,
+    width: 140,
     marginRight: 6,
     marginTop: 4
   },
   searchItem: {
-    width: 160,
+    width: 150,
     marginTop: 4,
     marginRight: 6,
   },
