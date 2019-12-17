@@ -110,6 +110,7 @@ export default class OrderManger extends React.Component {
           visible={this.state.showInfoDialog}
           order={this.state.currentItem}
           repairItems={this.state.repairItems}
+          staffs={this.state.repairStaffs}
           onClose={() => this.setState({ showInfoDialog: false })}
           onDialogConfirm={this.onDialogConfirm}
         />

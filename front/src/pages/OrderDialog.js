@@ -3,31 +3,45 @@ import {
   Modal,
   Form,
   Input,
-  InputNumber,
   Select,
-  TreeSelect,
+  List,
+  Cascader,
   message,
-  Divider
+  Table,
+  Icon,
+  InputNumber
 } from "antd";
 import ApiUtil from "../Utils/ApiUtil";
 import HttpUtil from "../Utils/HttpUtil";
 import CommonValues from "../Utils/CommonValues";
+import ArrayUtil from "../Utils/ArrayUtil";
 
 class OrderDialog extends React.Component {
   initData() {
-    let data = this.props.repairItems.map(item => {
-      item.title = item.name;
-      item.value = item.id + "";
-      item.selectable = false;
-    });
+    this.props.repairItems.forEach(item => this.setTreeData(item, false));
     return this.props.repairItems;
   }
   state = {
     confirmLoading: false,
-    repairItems: this.initData()
+    repairItems: this.initData(),
+    selectedRepairItems: [],
+    parts: [],
+    selectedParts: []
   };
 
   partTypes = [{ id: 0, name: "" }, ...CommonValues.partTypes];
+
+  // 生成符合要求的数据
+  setTreeData(item, isLeaf) {
+    item.label = item.name;
+    item.value = item.id + "";
+    item.isLeaf = isLeaf;
+    return item;
+  }
+
+  componentDidMount() {
+    this.onLoadPartData();
+  }
 
   handleOk = () => {
     this.props.form.validateFields((err, values) => {
@@ -71,44 +85,169 @@ class OrderDialog extends React.Component {
     }
   };
 
-  genTreeNode = (parentId, item) => {
-    return {
-      id: item.id,
-      pId: parentId,
-      value: item.id + "",
-      title: item.name,
-      isLeaf: true
-    };
-  };
-
-  onLoadTreeData = treeNode => {
-    let id = treeNode.props.id;
-    return HttpUtil.get(ApiUtil.API_GET_REPAIR_ITEMS + id).then(date => {
-      let items = date.map(item => this.genTreeNode(id, item));
+  onLoadRepairItemData = selectedOptions => {
+    const targetOption = selectedOptions[selectedOptions.length - 1];
+    let id = targetOption.id;
+    targetOption.loading = true;
+    HttpUtil.get(ApiUtil.API_GET_REPAIR_ITEMS + id).then(data => {
+      data.forEach(item => this.setTreeData(item, true));
+      targetOption.loading = false;
+      targetOption.children = data;
       this.setState({
-        repairItems: this.state.repairItems.concat(items)
+        repairItems: [...this.state.repairItems]
       });
     });
-  }
+  };
 
-  renderTreeSelect(getFieldDecorator) {
+  onLoadPartData = selectedOptions => {
+    if (selectedOptions === undefined) {
+      HttpUtil.get(ApiUtil.API_GET_PARTS + 0).then(data => {
+        data.forEach(item => this.setTreeData(item, false));
+        this.setState({
+          parts: data
+        });
+      });
+    } else {
+      let targetOption = selectedOptions[selectedOptions.length - 1];
+      let id = targetOption.id;
+      targetOption.loading = true;
+      HttpUtil.get(ApiUtil.API_GET_PARTS + id).then(data => {
+        targetOption.loading = false;
+        data.forEach(item => this.setTreeData(item, true));
+        targetOption.children = data;
+        this.setState({
+          parts: [...this.state.parts]
+        });
+      });
+    }
+  };
+
+  displayRender = labels => labels[labels.length - 1];
+
+  renderTreeSelect() {
     return (
-      <Form.Item label="维修项目" {...styles.formItemLayout}>
-        {getFieldDecorator("role")(
-          <TreeSelect
-            treeDataSimpleMode
-            style={{ width: 250 }}
-            value={this.state.value}
-            dropdownStyle={{ maxHeight: 400, overflow: "auto" }}
-            placeholder="添加维修项目"
-            onChange={value => {console.log("onChange");this.setState({ value });}}
-            onSelect={()=> console.log("onSelect")}
-            loadData={this.onLoadTreeData}
-            treeData={this.state.repairItems}
-          />
-        )}
+      <Form.Item
+        label="添加维修项目"
+        {...styles.formItemLayout}
+        style={{ marginBottom: 4 }}
+      >
+        <Cascader
+          style={{ width: 250 }}
+          placeholder="点击添加维修项"
+          value={""}
+          onChange={(value, selectedOptions) => {
+            let item = selectedOptions[selectedOptions.length - 1];
+            console.log(value + "  " + JSON.stringify(item));
+            this.setState({
+              selectedRepairItems: [...this.state.selectedRepairItems, item]
+            });
+          }}
+          loadData={this.onLoadRepairItemData}
+          options={this.state.repairItems}
+          displayRender={this.displayRender}
+        />
       </Form.Item>
     );
+  }
+
+  renderRepairItems() {
+    if (this.state.selectedRepairItems.length > 0) {
+      return (
+        <Table
+          size={"small"}
+          style={{ marginLeft: 30, width:600}}
+          pagination={false}
+          columns={[
+            { title: "维修项目", dataIndex: "name", key: "name" },
+            { title: "价格", dataIndex: "price", key: "price", align:"center" },
+            {
+              title: "删除", align:"center",
+              render: item =>
+                <Icon
+                  type="close"
+                  title="删除"
+                  style={{ color: "#ee6633", marginLeft: 20 }}
+                  onClick={() =>
+                    this.setState({
+                      selectedRepairItems: ArrayUtil.deleteItem(
+                        this.state.selectedRepairItems,
+                        item.id
+                      )
+                    })
+                  }
+                />
+            }
+          ]}
+          dataSource={this.state.selectedRepairItems}
+        />
+      );
+    }
+  }
+
+  renderPartSelect() {
+    return (
+      <Form.Item
+        label="添加配件材料"
+        {...styles.formItemLayout}
+        style={{ marginTop: 24, marginBottom: 4 }}
+      >
+        <Cascader
+          style={{ width: 250 }}
+          placeholder="点击添加材料"
+          value={""}
+          onChange={(value, selectedOptions) => {
+            let item = selectedOptions[selectedOptions.length - 1];
+            console.log(value + "  " + JSON.stringify(item));
+            item.count = 1;
+            this.setState({
+              selectedParts: [...this.state.selectedParts, item]
+            });
+          }}
+          loadData={this.onLoadPartData}
+          options={this.state.parts}
+          displayRender={this.displayRender}
+        />
+      </Form.Item>
+    );
+  }
+
+  renderParts() {
+    if (this.state.selectedParts.length > 0) {
+      return (
+        <Table
+          size={"small"}
+          style={{ marginLeft: 30, width:600}}
+          pagination={false}
+          columns={[
+            { title: "材料", dataIndex: "name", key: "name" },
+            { title: "单位", dataIndex: "unit", key: "unit", align:"center" },
+            { title: "数量", dataIndex: "count", key: "count", align:"center", 
+              render: count => <InputNumber value={count} onChange={value=>{
+                console.log('num: ' + value)
+              }} />},
+            { title: "单价", dataIndex: "price", key: "price", align:"center" },
+            {
+              title: "删除", align:"center",
+              render: item =>
+                <span><Icon
+                  type="close"
+                  title="删除"
+                  style={{ color: "#ee6633", marginLeft: 20 }}
+                  onClick={() =>
+                    this.setState({
+                      selectedParts: ArrayUtil.deleteItem(
+                        this.state.selectedParts,
+                        item.id
+                      )
+                    })
+                  }
+                /></span>
+            }
+          ]}
+          dataSource={this.state.selectedParts}
+        />
+      );
+    }
   }
 
   render() {
@@ -126,7 +265,8 @@ class OrderDialog extends React.Component {
         confirmLoading={this.state.confirmLoading}
         onCancel={this.handleCancel}
         onClose={this.props.onClose}
-        okText="保存"
+        maskClosable={false}
+        okText="生成订单"
         cancelText="取消"
       >
         <div>
@@ -134,22 +274,36 @@ class OrderDialog extends React.Component {
             <Form.Item {...styles.formItem2Col}>
               {getFieldDecorator("id")(<Input type="hidden" />)}
             </Form.Item>
-            客户信息：
             <Form.Item label="客户名" {...styles.formItem2Col}>
               {getFieldDecorator("name", {
                 rules: [{ required: true, message: "请输入客户名！" }]
               })(<Input placeholder="" />)}
             </Form.Item>
-            产品信息：
             <Form.Item label="型号" {...styles.formItem2Col}>
               {getFieldDecorator("name", {
                 rules: [{ required: true, message: "请输入型号！" }]
               })(<Input placeholder="" />)}
             </Form.Item>
-            {this.renderTreeSelect(getFieldDecorator)}
-            <Form.Item label="备注" {...styles.formItem2Col}>
-              {getFieldDecorator("remarks")(<Input />)}
+            <Form.Item label="服务工程师" {...styles.formItem2Col}>
+              <Select
+                placeholder="选择工程师"
+                /* mode="multiple" */
+                onChange={this.handleFilterChange}
+              >
+                {this.props.staffs.map(item => (
+                  <Select.Option value={item.id} key={item.id + ""}>
+                    {item.name}
+                  </Select.Option>
+                ))}
+              </Select>
             </Form.Item>
+
+            {this.renderTreeSelect()}
+            {this.renderRepairItems()}
+
+            {this.renderPartSelect()}
+            {this.renderParts()}
+
           </Form>
         </div>
       </Modal>

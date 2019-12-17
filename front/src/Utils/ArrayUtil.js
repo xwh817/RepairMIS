@@ -27,7 +27,7 @@ export default class ArrayUtil {
         let index = this.getItemIndex(array, id);
         if (index >= 0) {
             // splice操作之后，array中index，howmany的对象被删除
-            // 注意：函数返回值是剩下的元素
+            // 注意：splice函数返回的是删掉的元素
             array.splice(index, 1);
         }
         return array;
