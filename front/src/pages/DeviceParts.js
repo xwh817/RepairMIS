@@ -16,7 +16,7 @@ export default class DeviceParts extends React.Component {
     },
     {
       title: "产品名称",
-      render: item => <span style={{ cursor: "pointer" }} onClick={() => this.onItemClick(item)}>{item.name}</span>
+      render: item => <span style={{ cursor: "pointer", color:item.sid===0?'#1890ff':'' }} onClick={() => this.onItemClick(item)}>{item.name}</span>
     },
     {
       title: "单位",
@@ -115,14 +115,13 @@ export default class DeviceParts extends React.Component {
       let item = this.state.mTypes[i];
       if (item.id === id) {
         return item.name;
-        break;
       }
     }
   }
 
   renderBreadcrumb() {
     let style = { display: 'inline-block', fontSize: '16px', cursor: "pointer", color: '#1890ff' };
-    if (this.currentType == 0) {
+    if (this.currentType === 0) {
       return (<Breadcrumb style={style}>
         <Breadcrumb.Item>配件大类</Breadcrumb.Item></Breadcrumb>);
     } else {
@@ -178,7 +177,7 @@ export default class DeviceParts extends React.Component {
 
   // 点击行
   onItemClick = item => {
-    if (this.currentType == 0) {
+    if (this.currentType === 0) {
       this.handleFilterChange(item.id);
     } else {
       this.showUpdateDialog(item);
@@ -199,7 +198,7 @@ export default class DeviceParts extends React.Component {
       });
     } else {    // 新增
       // 如果不在当前类别下就刷新，不然就在当前页动态添加。
-      if (part.sid != this.currentType) {
+      if (part.sid !== this.currentType) {
         this.handleFilterChange(part.sid)
       } else {
         part.id = newId;

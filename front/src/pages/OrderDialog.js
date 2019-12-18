@@ -26,7 +26,13 @@ class OrderDialog extends React.Component {
     repairItems: this.initData(),
     selectedRepairItems: [],
     parts: [],
-    selectedParts: []
+    selectedParts: [],
+    totals: [
+      { id: 1, name: "维修费", price: 0, discount: 0 },
+      { id: 2, name: "材料费", price: 0, discount: 0 },
+      { id: 3, name: "外加工费", price: 0, discount: 0 },
+      { id: 4, name: "运费", price: 0, discount: 0 }
+    ]
   };
 
   partTypes = [{ id: 0, name: "" }, ...CommonValues.partTypes];
@@ -137,8 +143,9 @@ class OrderDialog extends React.Component {
           value={""}
           onChange={(value, selectedOptions) => {
             let item = selectedOptions[selectedOptions.length - 1];
-            console.log(value + "  " + JSON.stringify(item));
+            item.disabled = true;
             this.setState({
+              repairItems: [...this.state.repairItems],
               selectedRepairItems: [...this.state.selectedRepairItems, item]
             });
           }}
@@ -155,30 +162,50 @@ class OrderDialog extends React.Component {
       return (
         <Table
           size={"small"}
-          style={{ marginLeft: 30, width:600}}
+          rowKey="id"
+          style={{ marginLeft: 30, width: 640 }}
           pagination={false}
           columns={[
-            { title: "维修项目", dataIndex: "name", key: "name" },
-            { title: "价格", dataIndex: "price", key: "price", align:"center" },
+            { title: "维修项目", dataIndex: "name" },
+            { title: "费用", dataIndex: "price", align: "center" },
             {
-              title: "删除", align:"center",
+              title: "备注",
+              align: "center",
               render: item =>
+                this.renderDiscount(item, () => {
+                  this.setState({
+                    selectedRepairItems: [...this.state.selectedRepairItems]
+                  });
+                })
+            },
+            {
+              title: "删除",
+              align: "center",
+              render: item => (
                 <Icon
                   type="close"
                   title="删除"
-                  style={{ color: "#ee6633", marginLeft: 20 }}
-                  onClick={() =>
+                  style={{ color: "#ee6633" }}
+                  onClick={() => {
+                    item.disabled = false;
                     this.setState({
+                      repairItems: [...this.state.repairItems],
                       selectedRepairItems: ArrayUtil.deleteItem(
                         this.state.selectedRepairItems,
                         item.id
                       )
-                    })
-                  }
+                    });
+                  }}
                 />
+              )
             }
           ]}
           dataSource={this.state.selectedRepairItems}
+          footer={() => (
+            <div style={{ textAlign: "right", paddingRight: 16 }}>
+              合计：{this.getItemTotal(this.state.selectedRepairItems)}
+            </div>
+          )}
         />
       );
     }
@@ -199,7 +226,10 @@ class OrderDialog extends React.Component {
             let item = selectedOptions[selectedOptions.length - 1];
             console.log(value + "  " + JSON.stringify(item));
             item.count = 1;
+            item.discount = 1;
+            item.disabled = true;
             this.setState({
+              parts: [...this.state.parts],
               selectedParts: [...this.state.selectedParts, item]
             });
           }}
@@ -211,43 +241,199 @@ class OrderDialog extends React.Component {
     );
   }
 
+  renderDiscount(item, onUpdateState) {
+    return (
+      <Select
+        style={{ width: 70 }}
+        onChange={value => {
+          console.log("discount: " + value);
+          item.discount = value;
+          onUpdateState();
+        }}
+      >
+        <Select.Option value={1} style={{ height: 28 }}></Select.Option>
+        <Select.Option value={0}>免费</Select.Option>
+      </Select>
+    );
+  }
+
   renderParts() {
     if (this.state.selectedParts.length > 0) {
       return (
         <Table
           size={"small"}
-          style={{ marginLeft: 30, width:600}}
+          style={{ marginLeft: 30, width: 640 }}
+          rowKey="id"
           pagination={false}
           columns={[
-            { title: "材料", dataIndex: "name", key: "name" },
-            { title: "单位", dataIndex: "unit", key: "unit", align:"center" },
-            { title: "数量", dataIndex: "count", key: "count", align:"center", 
-              render: count => <InputNumber value={count} onChange={value=>{
-                console.log('num: ' + value)
-              }} />},
-            { title: "单价", dataIndex: "price", key: "price", align:"center" },
+            { title: "材料", dataIndex: "name", width:200 },
             {
-              title: "删除", align:"center",
+              title: "数量",
+              align: "center",
+              render: item => (
+                <InputNumber
+                  style={{ width: 60 }}
+                  min={1}
+                  value={item.count}
+                  onChange={value => {
+                    if (value === null) value = 0;
+                    item.count = value;
+                    this.setState({
+                      selectedParts: [...this.state.selectedParts]
+                    });
+                    console.log("num: " + value);
+                  }}
+                />
+              )
+            },
+            { title: "单位", dataIndex: "unit", align: "center" },
+            { title: "单价", dataIndex: "price", align: "center" },
+            {
+              title: "备注",
+              align: "center",
               render: item =>
-                <span><Icon
+                this.renderDiscount(item, () => {
+                  this.setState({
+                    selectedParts: [...this.state.selectedParts]
+                  });
+                })
+            },
+            {
+              title: "金额",
+              align: "center",
+              render: item => (
+                <span>{item.price * item.count * item.discount}</span>
+              )
+            },
+            {
+              title: "删除",
+              align: "center",
+              render: item => (
+                <Icon
                   type="close"
                   title="删除"
-                  style={{ color: "#ee6633", marginLeft: 20 }}
-                  onClick={() =>
+                  style={{ color: "#ee6633" }}
+                  onClick={() => {
+                    item.disabled = false;
                     this.setState({
+                      parts: [...this.state.parts],
                       selectedParts: ArrayUtil.deleteItem(
                         this.state.selectedParts,
                         item.id
                       )
-                    })
-                  }
-                /></span>
+                    });
+                  }}
+                />
+              )
             }
           ]}
           dataSource={this.state.selectedParts}
+          footer={() => (
+            <div style={{ textAlign: "right", paddingRight: 16 }}>
+              合计：{this.getItemTotal(this.state.selectedParts)}
+            </div>
+          )}
         />
       );
     }
+  }
+
+  getItemTotal(array) {
+    let total = 0;
+    array.forEach(item => {
+      let count = item.count === undefined ? 1 : item.count;
+      let discount = item.discount === undefined ? 1 : item.discount;
+      total += item.price * count * discount;
+    });
+    return total;
+  }
+
+  getTotal(array) {
+    let total = 0;
+    let discountAll = 0;
+    array.forEach(item => {
+      total += this.getTotalById(item);
+      discountAll += item.discount;
+    });
+    if (discountAll > 0) {
+      return (<span>应付款：&nbsp;{total} - {discountAll}<span style={{fontSize:10, color:'#aaaaaa'}}>（优惠合计）</span> = {total-discountAll}</span>);
+    } else {
+      return (<span>应付款：&nbsp;{total}</span>)
+    }
+    
+  }
+
+  getTotalById(item) {
+    return item.id > 2
+      ? item.price
+      : item.id === 1
+      ? this.getItemTotal(this.state.selectedRepairItems)
+      : this.getItemTotal(this.state.selectedParts);
+  }
+
+  renderTotals() {
+    return (
+      <Table
+        size={"small"}
+        style={{ width: 640 }}
+        rowKey="id"
+        pagination={false}
+        columns={[
+          { title: "", dataIndex: "name" },
+          {
+            title: "小计",
+            align: "center",
+            render: item => (
+              <InputNumber
+                style={{ width: 120 }}
+                min={0}
+                disabled={item.id === 1 || item.id === 2}
+                value={this.getTotalById(item)}
+                onChange={value => {
+                  if (value === null) value = 0;
+                  item.price = value;
+                  this.setState({
+                    totals: [...this.state.totals]
+                  });
+                }}
+              />
+            )
+          },
+          {
+            title: "优惠",
+            align: "center",
+            render: item => (
+              <InputNumber
+                style={{ width: 80 }}
+                min={0}
+                formatter={value => value > 0 ? `${value}` : ''}
+                value={item.discount}
+                onChange={value => {
+                  if (value === null) value = 0;
+                  item.discount = value;
+                  this.setState({
+                    totals: [...this.state.totals]
+                  });
+                }}
+              />
+            )
+          },
+          {
+            title: "优惠后",
+            align: "center",
+            render: item => (
+              <span>{this.getTotalById(item) - item.discount}</span>
+            )
+          }
+        ]}
+        dataSource={this.state.totals}
+        footer={() => (
+          <div style={{ textAlign: "right", paddingRight: 16 }}>
+            {this.getTotal(this.state.totals)}
+          </div>
+        )}
+      />
+    );
   }
 
   render() {
@@ -291,7 +477,7 @@ class OrderDialog extends React.Component {
                 onChange={this.handleFilterChange}
               >
                 {this.props.staffs.map(item => (
-                  <Select.Option value={item.id} key={item.id + ""}>
+                  <Select.Option value={item.id} key={"staff_" + item.id}>
                     {item.name}
                   </Select.Option>
                 ))}
@@ -304,6 +490,26 @@ class OrderDialog extends React.Component {
             {this.renderPartSelect()}
             {this.renderParts()}
 
+            <div style={{ marginLeft: 30, marginTop: 24, width: 640 }}>
+              <span
+                style={{ lineHeight: "36px", color: "rgba(0, 0, 0, 0.85)" }}
+              >
+                维修费用合计:
+              </span>
+              {this.renderTotals()}
+            </div>
+            {/* <div style={{ marginLeft: 30, marginTop: 24, width: 640, textAlign:'right' }}>
+              付款：
+              <InputNumber
+                style={{ width: 120 }}
+                min={0}
+                value={this.state.payment}
+                onChange={value => {
+                  if (value === null) value = 0;
+                  this.setState({payment: value});
+                }}
+              />
+            </div> */}
           </Form>
         </div>
       </Modal>

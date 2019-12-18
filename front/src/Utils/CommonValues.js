@@ -17,4 +17,10 @@ export default class CommonValues {
         { index: 2, id: 2, name: "液压部分" },
         { index: 3, id: 3, name: "其他易损件部分" }
     ];
+
+
+    static colors = {
+        selected: '#1890ff',
+
+    }
 }
