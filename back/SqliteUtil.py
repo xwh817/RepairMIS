@@ -42,10 +42,24 @@ def createTables():
             user VARCHAR(20) NOT NULL,
             phone VARCHAR(20) NOT NULL
             )'''
+        sql_create_t_order = '''CREATE TABLE IF NOT EXISTS t_order(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            client_name VARCHAR(100) NOT NULL,
+            client_model VARCHAR(100),
+            client_user VARCHAR(100),
+            client_phone VARCHAR(20),
+            client_sn VARCHAR(100),
+            staff VARCHAR(100),
+            repair_items TEXT,
+            parts TEXT,
+            total INTEGER,
+            modify_time TIMESTAMP NOT NULL DEFAULT (datetime('now','localtime'))
+            )'''
         cursor.execute(sql_create_t_user)
         cursor.execute(sql_create_t_parts)
         cursor.execute(sql_create_t_repair_items)
         cursor.execute(sql_create_t_store)
+        cursor.execute(sql_create_t_order)
     except Exception as e:
         print(repr(e))
 
@@ -402,6 +416,109 @@ def updateStore(json_str):
             'message': repr(e)
         }
         return re
+
+
+
+def addOrUpdateOrder(json_str):
+    try:
+        print(json_str)
+        order = json.loads(json_str)
+        id = order.get('id', 0)
+        client_name = order.get('client_name', '')
+        client_model = order.get('client_model', '')
+        client_user = order.get('client_user', '')
+        client_phone = order.get('client_phone', '')
+        client_sn = order.get('client_sn', '')
+        staff = order.get('staff', '')
+        repair_items = order.get('repair_items', '')
+        parts = order.get('parts', '')
+        total = order.get('total', 0)
+        result = ''
+        newId = id
+
+        if id == 0:  # 新增
+            keys = 'client_name, client_model, client_user, client_phone, client_sn, staff, repair_items, parts, total'
+            values = "'%s','%s','%s','%s','%s','%s','%s','%s',%d" % (client_name, client_model, client_user, client_phone, client_sn, staff, repair_items, parts, total)
+            sql = "INSERT INTO t_user (%s) values (%s)" % (keys, values)
+            print(sql)
+            cursor.execute(sql)
+            result = '添加成功'
+            newId = cursor.lastrowid
+            print(result, "newId:", newId)
+        else:   # 修改
+            update = "client_name='%s', client_model='%s', client_user='%s', client_phone='%s', client_sn='%s', staff='%s', repair_items='%s', parts='%s', total=%d" %(client_name, client_model, client_user, client_phone, client_sn, staff, repair_items, parts, total)
+            where = "where id=" + str(id)
+            sql = "update t_user set %s %s" % (update, where)
+            print(sql)
+            cursor.execute(sql)
+            result = '更新成功'
+            print(cursor.rowcount, result)
+
+        conn.commit()
+        re = {
+            'code': 0,
+            'newId': newId,
+            'message': result
+        }
+        return re
+    except Exception as e:
+        print(repr(e))
+        re = {
+            'code': -1,
+            'message': repr(e)
+        }
+        return re
+
+def getOrders(type):
+    sql = "select * from t_order"
+    print(sql)
+
+    cursor.execute(sql)
+
+    listAll = cursor.fetchall()     # fetchall() 获取所有记录
+    parts = []
+    for item in listAll:
+        part = {
+            'id': item[0],
+            'client_name': item[1],
+            'client_model': item[2], 
+            'client_user': item[3], 
+            'client_phone': item[4], 
+            'client_sn': item[5],  
+            'staff': item[6],  
+            'repair_items': item[7],  
+            'parts': item[8],  
+            'total': item[9],  
+            'modify_time': item[10], 
+        }
+        parts.append(part)
+
+    json_str = json.dumps(parts)
+    #print(json_str)
+
+    return json_str
+
+def deleteOrder(id):
+    try:
+        sql = "delete from t_order where id=%d" % (id)
+        print(sql)
+        cursor.execute(sql)
+        conn.commit()
+        re = {
+            'code': 0,
+            'message': '删除成功'
+        }
+        return json.dumps(re)
+    except Exception as e:
+        re = {
+            'code': -1,
+            'message': repr(e)
+        }
+        return json.dumps(re)
+
+
+
+
 
 
 def dumpPartsFromCVX():

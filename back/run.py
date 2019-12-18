@@ -94,6 +94,24 @@ def updateStore():
     return json.dumps(re)
 
 
+@app.route(apiPrefix + 'getOrders')
+def getOrders(type):
+    return DBUtil.getOrders(type)
+
+
+@app.route(apiPrefix + 'updateOrder', methods=['POST'])
+def updateOrder():
+    data = request.get_data(as_text=True)
+    re = DBUtil.addOrUpdateOrder(data)
+    return json.dumps(re)
+
+
+@app.route(apiPrefix + 'deleteOrder/<int:id>')
+def deleteOrder(id):
+    re = DBUtil.deleteOrder(id)
+    return re
+
+
 
 
 # if __name__ == '__main__': 确保服务器只会在该脚本被 Python 解释器直接执行的时候才会运行，而不是作为模块导入的时候。
