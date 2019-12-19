@@ -52,14 +52,23 @@ def createTables():
             staff VARCHAR(100),
             repair_items TEXT,
             parts TEXT,
-            total INTEGER,
+            totals INTEGER,
+            create_time TIMESTAMP NOT NULL DEFAULT (datetime('now','localtime')),
             modify_time TIMESTAMP NOT NULL DEFAULT (datetime('now','localtime'))
             )'''
+        sql_create_trigger_timestamp = '''CREATE TRIGGER IF NOT EXISTS trigger_auto_timestamp
+            AFTER UPDATE ON t_order
+            FOR EACH ROW
+            BEGIN
+                update t_order set modify_time=datetime('now','localtime') WHERE id = old.id;
+            END;'''
+
         cursor.execute(sql_create_t_user)
         cursor.execute(sql_create_t_parts)
         cursor.execute(sql_create_t_repair_items)
         cursor.execute(sql_create_t_store)
         cursor.execute(sql_create_t_order)
+        cursor.execute(sql_create_trigger_timestamp)
     except Exception as e:
         print(repr(e))
 
@@ -432,23 +441,23 @@ def addOrUpdateOrder(json_str):
         staff = order.get('staff', '')
         repair_items = order.get('repair_items', '')
         parts = order.get('parts', '')
-        total = order.get('total', 0)
+        totals = order.get('totals', '')
         result = ''
         newId = id
 
         if id == 0:  # 新增
-            keys = 'client_name, client_model, client_user, client_phone, client_sn, staff, repair_items, parts, total'
-            values = "'%s','%s','%s','%s','%s','%s','%s','%s',%d" % (client_name, client_model, client_user, client_phone, client_sn, staff, repair_items, parts, total)
-            sql = "INSERT INTO t_user (%s) values (%s)" % (keys, values)
+            keys = 'client_name, client_model, client_user, client_phone, client_sn, staff, repair_items, parts, totals'
+            values = "'%s','%s','%s','%s','%s','%s','%s','%s','%s'" % (client_name, client_model, client_user, client_phone, client_sn, staff, repair_items, parts, totals)
+            sql = "INSERT INTO t_order (%s) values (%s)" % (keys, values)
             print(sql)
             cursor.execute(sql)
             result = '添加成功'
             newId = cursor.lastrowid
             print(result, "newId:", newId)
         else:   # 修改
-            update = "client_name='%s', client_model='%s', client_user='%s', client_phone='%s', client_sn='%s', staff='%s', repair_items='%s', parts='%s', total=%d" %(client_name, client_model, client_user, client_phone, client_sn, staff, repair_items, parts, total)
+            update = "client_name='%s', client_model='%s', client_user='%s', client_phone='%s', client_sn='%s', staff='%s', repair_items='%s', parts='%s', totals='%s'" %(client_name, client_model, client_user, client_phone, client_sn, staff, repair_items, parts, totals)
             where = "where id=" + str(id)
-            sql = "update t_user set %s %s" % (update, where)
+            sql = "update t_order set %s %s" % (update, where)
             print(sql)
             cursor.execute(sql)
             result = '更新成功'
@@ -469,7 +478,7 @@ def addOrUpdateOrder(json_str):
         }
         return re
 
-def getOrders(type):
+def getOrders():
     sql = "select * from t_order"
     print(sql)
 
@@ -488,8 +497,9 @@ def getOrders(type):
             'staff': item[6],  
             'repair_items': item[7],  
             'parts': item[8],  
-            'total': item[9],  
-            'modify_time': item[10], 
+            'totals': item[9],  
+            'create_time': item[10], 
+            'modify_time': item[11]
         }
         parts.append(part)
 
@@ -592,6 +602,14 @@ sql = "insert into t_store values(1, '荆州市砼盟工程设备有限公司', 
 cursor.execute(sql)
 conn.commit() 
 """
+
+
+""" 
+sql = "drop table t_order"
+print(sql)
+cursor.execute(sql)
+conn.commit()
+""" 
 
 # addOrUpdateJob('{"name": "test23", "index": 8}')
 # addOrUpdateJob('{"name": "test23", "id": 8, "index": 8}')

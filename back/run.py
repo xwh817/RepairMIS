@@ -95,8 +95,8 @@ def updateStore():
 
 
 @app.route(apiPrefix + 'getOrders')
-def getOrders(type):
-    return DBUtil.getOrders(type)
+def getOrders():
+    return DBUtil.getOrders()
 
 
 @app.route(apiPrefix + 'updateOrder', methods=['POST'])

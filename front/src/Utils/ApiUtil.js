@@ -17,8 +17,14 @@ export default class ApiUtil {
     static API_REPAIR_ITEM_UPDATE = ApiUtil.URL_ROOT + '/updateRepairItem';
     static API_REPAIR_ITEM_DELETE = ApiUtil.URL_ROOT + '/deleteRepairItem/';
 
-
+    // 门店信息
     static API_GET_STORE = ApiUtil.URL_ROOT + '/getStore/';
     static API_STORE_UPDATE = ApiUtil.URL_ROOT + '/updateStore';
+
+    // 订单
+    static API_GET_ORDERS = ApiUtil.URL_ROOT + '/getOrders';
+    static API_ORDER_UPDATE = ApiUtil.URL_ROOT + '/updateOrder';
+    static API_ORDER_DELETE = ApiUtil.URL_ROOT + '/deleteOrder/';
+    static API_ORDER_SEARCH = ApiUtil.URL_ROOT + '/searchOrder';
     
 }

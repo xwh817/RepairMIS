@@ -9,7 +9,9 @@ import {
   message,
   Table,
   Icon,
-  InputNumber
+  InputNumber,
+  Col,
+  Row
 } from "antd";
 import ApiUtil from "../Utils/ApiUtil";
 import HttpUtil from "../Utils/HttpUtil";
@@ -24,15 +26,15 @@ class OrderDialog extends React.Component {
   state = {
     confirmLoading: false,
     repairItems: this.initData(),
-    selectedRepairItems: [],
+    selectedRepairItems: this.props.order.id === 0 ? [] : JSON.parse(this.props.order.repair_items),
     parts: [],
-    selectedParts: [],
-    totals: [
+    selectedParts: this.props.order.id === 0 ? [] : JSON.parse(this.props.order.parts),
+    totals: this.props.order.id === 0 ? [
       { id: 1, name: "维修费", price: 0, discount: 0 },
       { id: 2, name: "材料费", price: 0, discount: 0 },
       { id: 3, name: "外加工费", price: 0, discount: 0 },
       { id: 4, name: "运费", price: 0, discount: 0 }
-    ]
+    ] : JSON.parse(this.props.order.totals)
   };
 
   partTypes = [{ id: 0, name: "" }, ...CommonValues.partTypes];
@@ -58,7 +60,12 @@ class OrderDialog extends React.Component {
           confirmLoading: true
         });
 
-        HttpUtil.post(ApiUtil.API_PART_UPDATE, values)
+        values.repair_items = JSON.stringify(this.state.selectedRepairItems);
+        values.parts = JSON.stringify(this.state.selectedParts);
+        values.totals = JSON.stringify(this.state.totals);
+
+        console.log(JSON.stringify(values));
+        HttpUtil.post(ApiUtil.API_ORDER_UPDATE, values)
           .then(re => {
             console.log("post result: ", re.newId);
             message.info(re.message);
@@ -130,15 +137,10 @@ class OrderDialog extends React.Component {
 
   displayRender = labels => labels[labels.length - 1];
 
-  renderTreeSelect() {
+  renderRepairItemsSelect() {
     return (
-      <Form.Item
-        label="添加维修项目"
-        {...styles.formItemLayout}
-        style={{ marginBottom: 4 }}
-      >
+      <Form.Item label="添加维修项目" style={{ marginBottom: 4 }}>
         <Cascader
-          style={{ width: 250 }}
           placeholder="点击添加维修项"
           value={""}
           onChange={(value, selectedOptions) => {
@@ -215,11 +217,9 @@ class OrderDialog extends React.Component {
     return (
       <Form.Item
         label="添加配件材料"
-        {...styles.formItemLayout}
         style={{ marginTop: 24, marginBottom: 4 }}
       >
         <Cascader
-          style={{ width: 250 }}
           placeholder="点击添加材料"
           value={""}
           onChange={(value, selectedOptions) => {
@@ -266,7 +266,7 @@ class OrderDialog extends React.Component {
           rowKey="id"
           pagination={false}
           columns={[
-            { title: "材料", dataIndex: "name", width:200 },
+            { title: "材料", dataIndex: "name", width: 200 },
             {
               title: "数量",
               align: "center",
@@ -356,11 +356,17 @@ class OrderDialog extends React.Component {
       discountAll += item.discount;
     });
     if (discountAll > 0) {
-      return (<span>应付款：&nbsp;{total} - {discountAll}<span style={{fontSize:10, color:'#aaaaaa'}}>（优惠合计）</span> = {total-discountAll}</span>);
+      return (
+        <span>
+          应付款：&nbsp;{total} - {discountAll}
+          <span style={{ fontSize: 10, color: "#aaaaaa" }}>
+            （优惠合计）
+          </span> = <span style={{color:'#ff4d4f'}}>{total - discountAll}</span>
+        </span>
+      );
     } else {
-      return (<span>应付款：&nbsp;{total}</span>)
+      return <span>应付款：&nbsp;<span style={{color:'#ff4d4f'}}>{total}</span></span>;
     }
-    
   }
 
   getTotalById(item) {
@@ -406,7 +412,7 @@ class OrderDialog extends React.Component {
               <InputNumber
                 style={{ width: 80 }}
                 min={0}
-                formatter={value => value > 0 ? `${value}` : ''}
+                formatter={value => (value > 0 ? `${value}` : "")}
                 value={item.discount}
                 onChange={value => {
                   if (value === null) value = 0;
@@ -443,7 +449,7 @@ class OrderDialog extends React.Component {
 
     return (
       <Modal
-        title={this.props.order.id > 0 ? "修改订单" : "添加订单"}
+        title={this.props.order.id > 0 ? "修改订单" : "添加新订单"}
         visible={this.props.visible}
         style={{ top: 20 }}
         width={800}
@@ -452,39 +458,82 @@ class OrderDialog extends React.Component {
         onCancel={this.handleCancel}
         onClose={this.props.onClose}
         maskClosable={false}
-        okText="生成订单"
+        okText={this.props.order.id > 0 ? "保存" : "生成订单"}
         cancelText="取消"
       >
         <div>
-          <Form layout="horizontal" onSubmit={this.handleSubmit}>
-            <Form.Item {...styles.formItem2Col}>
+          <Form
+            layout="horizontal"
+            labelCol={{ span: 4 }}
+            wrapperCol={{ span: 8 }}
+            onSubmit={this.handleSubmit}
+          >
+            <Form.Item>
               {getFieldDecorator("id")(<Input type="hidden" />)}
             </Form.Item>
-            <Form.Item label="客户名" {...styles.formItem2Col}>
-              {getFieldDecorator("name", {
+            <Form.Item label="客户名">
+              {getFieldDecorator("client_name", {
                 rules: [{ required: true, message: "请输入客户名！" }]
               })(<Input placeholder="" />)}
             </Form.Item>
-            <Form.Item label="型号" {...styles.formItem2Col}>
-              {getFieldDecorator("name", {
-                rules: [{ required: true, message: "请输入型号！" }]
-              })(<Input placeholder="" />)}
-            </Form.Item>
-            <Form.Item label="服务工程师" {...styles.formItem2Col}>
-              <Select
-                placeholder="选择工程师"
-                /* mode="multiple" */
-                onChange={this.handleFilterChange}
-              >
-                {this.props.staffs.map(item => (
-                  <Select.Option value={item.id} key={"staff_" + item.id}>
-                    {item.name}
-                  </Select.Option>
-                ))}
-              </Select>
+            <Row>
+              <Col span={12}>
+                <Form.Item
+                  label="客户联系人"
+                  labelCol={{ span: 8 }}
+                  wrapperCol={{ span: 12 }}
+                >
+                  {getFieldDecorator("client_user")(<Input placeholder="" />)}
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  label="电话"
+                  labelCol={{ span: 6 }}
+                  wrapperCol={{ span: 12 }}
+                >
+                  {getFieldDecorator("client_phone")(<Input placeholder="" />)}
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row>
+              <Col span={12}>
+                <Form.Item
+                  label="型号"
+                  labelCol={{ span: 8 }}
+                  wrapperCol={{ span: 12 }}
+                >
+                  {getFieldDecorator("client_model")(<Input placeholder="" />)}
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  label="出厂编号"
+                  labelCol={{ span: 6 }}
+                  wrapperCol={{ span: 12 }}
+                >
+                  {getFieldDecorator("client_sn")(<Input placeholder="" />)}
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Form.Item label="服务工程师">
+              {getFieldDecorator("staff")(
+                <Select
+                  placeholder="选择工程师"
+                  /* mode="multiple" */
+                  onChange={this.handleFilterChange}
+                >
+                  {this.props.staffs.map(item => (
+                    <Select.Option value={item.name} key={"staff_" + item.id}>
+                      {item.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              )}
             </Form.Item>
 
-            {this.renderTreeSelect()}
+            {this.renderRepairItemsSelect()}
             {this.renderRepairItems()}
 
             {this.renderPartSelect()}
@@ -494,39 +543,16 @@ class OrderDialog extends React.Component {
               <span
                 style={{ lineHeight: "36px", color: "rgba(0, 0, 0, 0.85)" }}
               >
-                维修费用合计:
+                维修费用合计（元）:
               </span>
               {this.renderTotals()}
             </div>
-            {/* <div style={{ marginLeft: 30, marginTop: 24, width: 640, textAlign:'right' }}>
-              付款：
-              <InputNumber
-                style={{ width: 120 }}
-                min={0}
-                value={this.state.payment}
-                onChange={value => {
-                  if (value === null) value = 0;
-                  this.setState({payment: value});
-                }}
-              />
-            </div> */}
           </Form>
         </div>
       </Modal>
     );
   }
 }
-
-const styles = {
-  formItemLayout: {
-    labelCol: { span: 4 },
-    wrapperCol: { span: 16 }
-  },
-  formItem2Col: {
-    labelCol: { span: 4 },
-    wrapperCol: { span: 8 }
-  }
-};
 
 const objToForm = obj => {
   let target = {};
