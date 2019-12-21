@@ -478,16 +478,8 @@ def addOrUpdateOrder(json_str):
         }
         return re
 
-def getOrders():
-    sql = "select * from t_order"
-    print(sql)
-
-    cursor.execute(sql)
-
-    listAll = cursor.fetchall()     # fetchall() 获取所有记录
-    parts = []
-    for item in listAll:
-        part = {
+def orderAdapter(item):
+    return {
             'id': item[0],
             'client_name': item[1],
             'client_model': item[2], 
@@ -501,12 +493,30 @@ def getOrders():
             'create_time': item[10], 
             'modify_time': item[11]
         }
-        parts.append(part)
+ 
+def getOrders():
+    sql = "select * from t_order"
+    print(sql)
 
-    json_str = json.dumps(parts)
-    #print(json_str)
+    cursor.execute(sql)
 
+    listAll = cursor.fetchall()     # fetchall() 获取所有记录
+    orders = []
+    for item in listAll:
+        order = orderAdapter(item)
+        orders.append(order)
+
+    json_str = json.dumps(orders)
     return json_str
+
+def getOrderById(id):
+    sql = "select * from t_order where id = %d" % id
+    print(sql)
+    cursor.execute(sql)
+    item = cursor.fetchone()
+    order = orderAdapter(item)
+    #print(json.dumps(order))
+    return order
 
 def deleteOrder(id):
     try:

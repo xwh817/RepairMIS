@@ -5,6 +5,10 @@ import json
 base_path = os.path.abspath(os.path.dirname(__file__))
 upload_root_dir = 'uploads'
 
+def dirFiles():
+    upload_dir = os.path.join(base_path, 'excel')
+    return upload_dir
+
 def fileGetDir(id):
     id_path = str(id) if id > 0 else 'temp'
     upload_dir = os.path.join(base_path, upload_root_dir, id_path)

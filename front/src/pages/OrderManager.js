@@ -57,10 +57,13 @@ export default class OrderManger extends React.Component {
             onClick={() => this.deleteConfirm(item)}
           />
           <Icon
-            type="printer"
+            type="file-excel"
             title="打印表格"
-            style={{ color: "#1890ff", marginLeft: 20 }}
-            onClick={() => message.info('Excel文件')}
+            style={{ color: "green", marginLeft: 20 }}
+            onClick={() => {
+              const w=window.open('about:blank');
+              w.location.href= (ApiUtil.API_ORDER_FILE + item.id + '/' + new Date().getTime());
+            }}
           />
         </span>
       )

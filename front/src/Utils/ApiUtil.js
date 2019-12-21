@@ -26,5 +26,7 @@ export default class ApiUtil {
     static API_ORDER_UPDATE = ApiUtil.URL_ROOT + '/updateOrder';
     static API_ORDER_DELETE = ApiUtil.URL_ROOT + '/deleteOrder/';
     static API_ORDER_SEARCH = ApiUtil.URL_ROOT + '/searchOrder';
+
+    static API_ORDER_FILE= this.URL_IP + ApiUtil.URL_ROOT + '/fileGet/';
     
 }
