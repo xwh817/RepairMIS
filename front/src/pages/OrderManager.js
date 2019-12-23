@@ -8,7 +8,8 @@ import {
   message,
   Input,
   Modal,
-  DatePicker
+  DatePicker,
+  Spin
 } from "antd";
 import ApiUtil from "../Utils/ApiUtil";
 import HttpUtil from "../Utils/HttpUtil";
@@ -24,23 +25,29 @@ export default class OrderManger extends React.Component {
       align: "center"
     },
     {
+      title: "订单号",
+      width: 110,
+      dataIndex: "sn"
+    },
+    {
       title: "客户名",
       dataIndex: "client_name"
     },
     {
       title: "型号",
-      dataIndex: "client_sn"
+      dataIndex: "client_model"
     },
     {
       title: "服务工程师",
+      width: 120,
       dataIndex: "staff"
     },
-    {
+    /* {
       title: "日期",
       dataIndex: "create_time"
-    },
+    }, */
     {
-      title: "编辑",
+      title: "操作",
       align: "center",
       width: 160,
       render: item => (
@@ -51,19 +58,20 @@ export default class OrderManger extends React.Component {
             onClick={() => this.showDialog(item)}
           />
           <Icon
+            type="file-excel"
+            title="下载Excel"
+            style={{ color: "#167919", marginLeft: 20 }}
+            onClick={() => {
+              const w = window.open("about:blank");
+              w.location.href =
+                ApiUtil.API_ORDER_FILE + item.id + "/" + new Date().getTime();
+            }}
+          />
+          <Icon
             type="close"
             title="删除"
             style={{ color: "#ee6633", marginLeft: 20 }}
             onClick={() => this.deleteConfirm(item)}
-          />
-          <Icon
-            type="file-excel"
-            title="打印表格"
-            style={{ color: "green", marginLeft: 20 }}
-            onClick={() => {
-              const w=window.open('about:blank');
-              w.location.href= (ApiUtil.API_ORDER_FILE + item.id + '/' + new Date().getTime());
-            }}
           />
         </span>
       )
@@ -75,10 +83,12 @@ export default class OrderManger extends React.Component {
     repairStaffs: [],
     currentItem: {},
     orderList: [],
-    showInfoDialog: false
+    showInfoDialog: false,
+    loading: true
   };
 
   deviceTypes = [
+    { id: 0, name: "" },
     { id: 1, name: "三一重工" },
     { id: 2, name: "2222" },
     { id: 3, name: "3333" }
@@ -97,36 +107,37 @@ export default class OrderManger extends React.Component {
       })
       .then(() => HttpUtil.get(ApiUtil.API_GET_USERS + 4))
       .then(data => {
+        data = [{ id: 0, name: "" }, ...data]
         this.setState({
           repairStaffs: data
         });
       })
       .then(() => HttpUtil.get(ApiUtil.API_GET_ORDERS))
       .then(data => {
-        data.map((item,index) => item.index=index+1);
-        console.log("orderList: " + JSON.stringify(data));
+        data.map((item, index) => (item.index = index + 1));
+        //console.log("orderList: " + JSON.stringify(data));
         this.setState({
-          orderList: data
+          orderList: data,
+          loading: false
         });
       })
       .catch(error => {
         message.error(error.message);
+        this.setState({ loading: false });
       });
   }
 
   removeData(id) {
     HttpUtil.get(ApiUtil.API_ORDER_DELETE + id)
-      .then(
-        re => {
-          message.info(re.message);
-          let items = ArrayUtil.deleteItem(this.state.orderList, id);
-          this.setState({orderList: items});
-        }
-      ).catch(error => {
+      .then(re => {
+        message.info(re.message);
+        let items = ArrayUtil.deleteItem(this.state.orderList, id);
+        this.setState({ orderList: items });
+      })
+      .catch(error => {
         message.error(error.message);
       });
   }
-
 
   searchItems = {};
 
@@ -138,10 +149,51 @@ export default class OrderManger extends React.Component {
     }
   };
 
-  handleSearch = () => {};
+  handleSelectChange = (attr, value) => {
+    if (value === '') {
+      delete this.searchItems[attr];
+    } else {
+      this.searchItems[attr] = value;
+    }
+    
+    console.log(attr + ":" + value);
+  }
 
-  handleDataChange = (date, dateString) => {
-    console.log(date, dateString);
+  handleDateChange = (dates, dateStrings) => {
+    if (dates.length === 0) {
+      delete this.searchItems['startDate'];
+      delete this.searchItems['endDate'];
+    } else {
+      this.searchItems['startDate'] = dates[0].startOf('day').format('YYYY-MM-DD')
+      this.searchItems['endDate'] = dates[1].endOf('day').format('YYYY-MM-DD')
+    }
+    console.log(JSON.stringify(this.searchItems));
+  };
+
+
+  handleSearch = () => {
+    let where = JSON.stringify(this.searchItems);
+    /* if (where  === "{}") {
+      message.error('请输入搜索条件！', 1);
+      return;
+    } */
+    let url = ApiUtil.API_ORDER_SEARCH + "?where=" + encodeURI(where);
+    this.setState({ loading: true });
+    HttpUtil.get(url)
+      .then(data => {
+        if (data.length === 0) {
+          message.info('没有搜索到内容', 1);
+        }
+        data.map((item, index) => (item.index = index + 1));
+        this.setState({
+          orderList: data,
+          loading: false
+        });
+      })
+      .catch(error => {
+        message.error(error.message);
+        this.setState({ loading: false });
+      });
   };
 
   renderDialog() {
@@ -166,12 +218,12 @@ export default class OrderManger extends React.Component {
           <DatePicker.RangePicker
             format={"YYYY.MM.DD"}
             style={{ width: 220, marginRight: 6 }}
-            onChange={this.handleDataChange}
+            onChange={this.handleDateChange}
           />
 
           <Input
             placeholder="订单号"
-            item="id"
+            item="sn"
             prefix={<Icon type="account-book" style={styles.prefixIcon} />}
             style={styles.searchItem}
             onChange={this.handleTextChange}
@@ -181,31 +233,38 @@ export default class OrderManger extends React.Component {
             {this.state.repairItems.map(item => <Select.Option value={item.id} key={item.id + ''}>{item.name}</Select.Option>)}
           </Select> */}
 
-          <Select
+          {/* <Select
             placeholder="型号"
             style={styles.select}
-            onChange={this.handleFilterChange}
+            onChange={value => this.handleSelectChange('client_model', value)}
           >
             {this.deviceTypes.map(item => (
-              <Select.Option value={item.id} key={item.id + ""}>
+              <Select.Option value={item.name} key={item.id + ""} style={{ height: 30 }}>
                 {item.name}
               </Select.Option>
             ))}
-          </Select>
+          </Select> */}
+          <Input
+            placeholder="型号"
+            item="client_model"
+            prefix={<Icon type="tool" style={styles.prefixIcon} />}
+            style={styles.searchItem}
+            onChange={this.handleTextChange}
+          />
           <Select
             placeholder="服务工程师"
             style={styles.select}
-            onChange={this.handleFilterChange}
+            onChange={value => this.handleSelectChange('staff', value)}
           >
             {this.state.repairStaffs.map(item => (
-              <Select.Option value={item.id} key={item.id + ""}>
+              <Select.Option value={item.name} key={item.id + ""} style={{ height: 30 }}>
                 {item.name}
               </Select.Option>
             ))}
           </Select>
           <Input
             placeholder="客户名"
-            item="name"
+            item="client_name"
             prefix={<Icon type="user" style={styles.prefixIcon} />}
             style={styles.searchItem}
             onChange={this.handleTextChange}
@@ -223,13 +282,15 @@ export default class OrderManger extends React.Component {
             添加
           </Button>
         </div>
-        <Table
-          style={{ marginTop: 10 }}
-          dataSource={this.state.orderList}
-          rowKey={item => item.id}
-          columns={this.columns}
-          pagination={false}
-        />
+        <Spin spinning={this.state.loading} size="large" delay={500}>
+          <Table
+            style={{ marginTop: 10 }}
+            dataSource={this.state.orderList}
+            rowKey={item => item.id}
+            columns={this.columns}
+            pagination={true}
+          />
+        </Spin>
 
         {this.renderDialog()}
       </div>
@@ -253,43 +314,46 @@ export default class OrderManger extends React.Component {
     });
   };
 
-  
-  onDialogConfirm = (order, newId) => {
+  onDialogConfirm = (order, newId, newSN) => {
     this.setState({
       showInfoDialog: false
     });
 
-    if (order.id) { // 修改
+    if (order.id) {
+      // 修改
       let datas = [...this.state.orderList];
+      console.log(JSON.stringify(order));
       ArrayUtil.replaceItem(datas, order);
       this.setState({
         orderList: datas
       });
-    } else {    // 新增
+    } else {
+      // 新增
       order.id = newId;
-      order.index = this.state.orderList.length+1;
+      order.sn = newSN;
+      order.index = this.state.orderList.length + 1;
       let datas = [...this.state.orderList];
+      //order.create_time = new Date().format("yyyy-MM-dd");
       datas.push(order);
       this.setState({
         orderList: datas
       });
     }
-  }
+  };
 
   deleteConfirm = item => {
-    var that = this;    // 下面的内嵌对象里面，this就改变了，这里在外面存一下。
+    var that = this; // 下面的内嵌对象里面，this就改变了，这里在外面存一下。
     Modal.confirm({
-      title: '确认',
-      content: '确定要删除该订单吗？',
-      okText: '确认',
-      cancelText: '取消',
+      title: "确认",
+      content: "确定要删除该订单吗？",
+      okText: "确认",
+      cancelText: "取消",
       onOk() {
         that.removeData(item.id);
       },
-      onCancel() { },
+      onCancel() {}
     });
   };
-
 }
 
 const styles = {

@@ -3,6 +3,7 @@
 import sqlite3
 import json
 import csv
+import datetime
 import dao.UserDao as userDao
 
 db_name = 'repair_manager'
@@ -44,6 +45,7 @@ def createTables():
             )'''
         sql_create_t_order = '''CREATE TABLE IF NOT EXISTS t_order(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sn VARCHAR(20),
             client_name VARCHAR(100) NOT NULL,
             client_model VARCHAR(100),
             client_user VARCHAR(100),
@@ -427,6 +429,24 @@ def updateStore(json_str):
         return re
 
 
+def getNewOrderSN():
+    day = datetime.date.today().strftime('%Y%m%d')
+    items = searchOrder({'sn':day})
+    maxIndex = 0
+    for item in items:
+        sn = item['sn']
+        print(sn)
+        index = int(sn.replace(day, ''))
+        if (index > maxIndex):
+            maxIndex = index
+    newIndex = maxIndex + 1
+    newSN = ''
+    if (newIndex < 10):
+        newSN = day + '0' + str(newIndex)
+    else:
+        newSN = day + str(newIndex)
+    print("newSN: " + newSN)
+    return newSN
 
 def addOrUpdateOrder(json_str):
     try:
@@ -444,10 +464,12 @@ def addOrUpdateOrder(json_str):
         totals = order.get('totals', '')
         result = ''
         newId = id
+        sn = ''
 
         if id == 0:  # 新增
-            keys = 'client_name, client_model, client_user, client_phone, client_sn, staff, repair_items, parts, totals'
-            values = "'%s','%s','%s','%s','%s','%s','%s','%s','%s'" % (client_name, client_model, client_user, client_phone, client_sn, staff, repair_items, parts, totals)
+            sn = getNewOrderSN()
+            keys = 'sn, client_name, client_model, client_user, client_phone, client_sn, staff, repair_items, parts, totals'
+            values = "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'" % (sn, client_name, client_model, client_user, client_phone, client_sn, staff, repair_items, parts, totals)
             sql = "INSERT INTO t_order (%s) values (%s)" % (keys, values)
             print(sql)
             cursor.execute(sql)
@@ -467,6 +489,7 @@ def addOrUpdateOrder(json_str):
         re = {
             'code': 0,
             'newId': newId,
+            'newSN': sn,
             'message': result
         }
         return re
@@ -481,17 +504,18 @@ def addOrUpdateOrder(json_str):
 def orderAdapter(item):
     return {
             'id': item[0],
-            'client_name': item[1],
-            'client_model': item[2], 
-            'client_user': item[3], 
-            'client_phone': item[4], 
-            'client_sn': item[5],  
-            'staff': item[6],  
-            'repair_items': item[7],  
-            'parts': item[8],  
-            'totals': item[9],  
-            'create_time': item[10], 
-            'modify_time': item[11]
+            'sn': item[1],
+            'client_name': item[2],
+            'client_model': item[3], 
+            'client_user': item[4], 
+            'client_phone': item[5], 
+            'client_sn': item[6],  
+            'staff': item[7],  
+            'repair_items': item[8],  
+            'parts': item[9],  
+            'totals': item[10],  
+            'create_time': item[11], 
+            'modify_time': item[12]
         }
  
 def getOrders():
@@ -517,6 +541,55 @@ def getOrderById(id):
     order = orderAdapter(item)
     #print(json.dumps(order))
     return order
+
+def searchOrder(where):
+    try:
+        sql_like = ''
+        sql_where = ''
+        where_items = []
+
+        sn = where.get('sn', '').strip()
+        if len(sn) > 0:
+            sql_like = ("sn like '" + sn + "%'")
+            where_items.append(sql_like)
+
+        startDate = where.get('startDate', '')
+        endDate = where.get('endDate', '')
+        if len(startDate) > 0 and len(endDate) > 0:
+            #sql_between = "create_time between %d and %d" % (startDate, endDate)
+            sql_start = "datetime('%s 00:00:00')" % startDate
+            sql_end = "datetime('%s 24:00:00')" % endDate
+            sql_between = "create_time between %s and %s" % (sql_start, sql_end)
+            where_items.append(sql_between)
+        
+        where['sn'] = ''
+        where['startDate'] = ''
+        where['endDate'] = ''
+        for key, value in where.items():
+            if len(value.strip()) > 0:
+                where_item = (key + "='%s'" % value.strip())
+                where_items.append(where_item)
+
+        if len(where_items) > 0:
+            sql_where = 'where ' + ' and '.join(where_items)
+        
+        #order = ' order by id desc'
+        sql = "select * from t_order %s" % (sql_where)
+        print(sql)
+
+        cursor.execute(sql)
+        dateList = cursor.fetchall()     # fetchall() 获取所有记录
+        
+        orders = []
+        for item in dateList:
+            order = orderAdapter(item)
+            orders.append(order)
+        return orders
+
+    except Exception as e:
+        print(repr(e))
+        return []
+
 
 def deleteOrder(id):
     try:
@@ -619,7 +692,10 @@ sql = "drop table t_order"
 print(sql)
 cursor.execute(sql)
 conn.commit()
-""" 
+ """
+
+
+#getNewOrderSN()
 
 # addOrUpdateJob('{"name": "test23", "index": 8}')
 # addOrUpdateJob('{"name": "test23", "id": 8, "index": 8}')

@@ -39,8 +39,9 @@ def setTextRange(cell_range, text, isTitle=False):
     mysheet.merge_cells(cell_range)
     setText(cell_range.split(':')[0], text, isTitle=isTitle)
 
-def getOrderSN(order):
-    return order['create_time'].replace('-', '').replace(' ', '').replace(':', '')
+def setRowHeight(row, height):
+    mysheet.row_dimensions[row].height = height
+
 
 def buildExcel(id):
     global order
@@ -54,8 +55,7 @@ def buildExcel(id):
     #setBorder(mysheet, "A1:H10")
     setBorder()
     buildFooter()
-    create_time = getOrderSN(order)
-    fileName = '%s.xlsx' % create_time
+    fileName = '%s.xlsx' % order['sn']
     mywb.save('./excel/%s' % fileName)
     print(fileName)
     return fileName
@@ -74,10 +74,10 @@ def buildClientInfo():
     setText('E%d' % startRow, '日期')
     setText('E%d' % (startRow+1), '维修订单号')
     setTextRange('F%d:H%d' %(startRow, startRow), order['create_time'].split(' ')[0])
-    setTextRange('F%d:H%d' %(startRow+1, startRow+1), getOrderSN(order))
+    setTextRange('F%d:H%d' %(startRow+1, startRow+1), order['sn'])
 
     setTextRange('A%d:H%d' %(startRow+2, startRow+2), '客户信息', isTitle=True)
-    mysheet.row_dimensions[startRow+2].height = 30
+    setRowHeight(startRow+2, 30)
 
     setText('A%d' % (startRow+3), '客户名称')
     setTextRange('B%d:H%d' %(startRow+3, startRow+3), order['client_name'])

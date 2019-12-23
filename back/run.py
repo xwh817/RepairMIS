@@ -6,7 +6,7 @@
 from flask import Flask, render_template, request, send_from_directory
 import os
 import json
-import SqliteUtil as DBUtil
+import SqliteUtil
 import FileUtil
 import ExcelUtil
 
@@ -37,80 +37,89 @@ apiPrefix = '/api/v1/'
 
 @app.route(apiPrefix + 'getUsers/<int:type>')
 def getUsers(type):
-    return DBUtil.getUsers(type)
+    return SqliteUtil.getUsers(type)
 
 
 @app.route(apiPrefix + 'updateUser', methods=['POST'])
 def updateUser():
     data = request.get_data(as_text=True)
-    re = DBUtil.addOrUpdateUser(data)
+    re = SqliteUtil.addOrUpdateUser(data)
     return json.dumps(re)
 
 
 @app.route(apiPrefix + 'deleteUser/<int:id>')
 def deleteUser(id):
-    re = DBUtil.deleteUser(id)
+    re = SqliteUtil.deleteUser(id)
     return re
 
 
 @app.route(apiPrefix + 'getParts/<int:type>')
 def getParts(type):
-    return DBUtil.getParts(type)
+    return SqliteUtil.getParts(type)
 
 @app.route(apiPrefix + 'updatePart', methods=['POST'])
 def updatePart():
     data = request.get_data(as_text=True)
-    re = DBUtil.addOrUpdatePart(data)
+    re = SqliteUtil.addOrUpdatePart(data)
     return json.dumps(re)
 
 @app.route(apiPrefix + 'deletePart/<int:id>')
 def deletePart(id):
-    re = DBUtil.deletePart(id)
+    re = SqliteUtil.deletePart(id)
     return re
 
 
 @app.route(apiPrefix + 'getRepairItems/<int:type>')
 def getRepairItems(type):
-    return DBUtil.getRepairItems(type)
+    return SqliteUtil.getRepairItems(type)
 
 @app.route(apiPrefix + 'updateRepairItem', methods=['POST'])
 def updateRepairItem():
     data = request.get_data(as_text=True)
-    re = DBUtil.addOrUpdateRepairItem(data)
+    re = SqliteUtil.addOrUpdateRepairItem(data)
     return json.dumps(re)
 
 @app.route(apiPrefix + 'deleteRepairItem/<int:id>')
 def deleteRepairItem(id):
-    re = DBUtil.deleteRepairItem(id)
+    re = SqliteUtil.deleteRepairItem(id)
     return re
 
 
 @app.route(apiPrefix + 'getStore/<int:id>')
 def getStore(id):
-    return DBUtil.getStore(id)
+    return SqliteUtil.getStore(id)
 
 @app.route(apiPrefix + 'updateStore', methods=['POST'])
 def updateStore():
     data = request.get_data(as_text=True)
-    re = DBUtil.updateStore(data)
+    re = SqliteUtil.updateStore(data)
     return json.dumps(re)
 
 
 @app.route(apiPrefix + 'getOrders')
 def getOrders():
-    return DBUtil.getOrders()
+    return SqliteUtil.getOrders()
+
+@app.route(apiPrefix + 'searchOrder')
+def searchOrder():
+    data = request.args.get('where')
+    print("searchOrder:", data)
+    where = json.loads(data)
+    array = SqliteUtil.searchOrder(where)
+    re = json.dumps(array)
+    return re
 
 
 @app.route(apiPrefix + 'updateOrder', methods=['POST'])
 def updateOrder():
     data = request.get_data(as_text=True)
-    re = DBUtil.addOrUpdateOrder(data)
+    re = SqliteUtil.addOrUpdateOrder(data)
     return json.dumps(re)
 
 
 @app.route(apiPrefix + 'deleteOrder/<int:id>')
 def deleteOrder(id):
-    re = DBUtil.deleteOrder(id)
+    re = SqliteUtil.deleteOrder(id)
     return re
 
 # rdm防止浏览器缓存，文件更新后还是下载的链接

@@ -67,12 +67,15 @@ class OrderDialog extends React.Component {
         console.log(JSON.stringify(values));
         HttpUtil.post(ApiUtil.API_ORDER_UPDATE, values)
           .then(re => {
+            if (re.code < 0) {
+              throw new Error('添加失败：' + re.message)
+            }
             console.log("post result: ", re.newId);
             message.info(re.message);
             this.setState({
               confirmLoading: false
             });
-            this.props.onDialogConfirm(values, re.newId);
+            this.props.onDialogConfirm(values, re.newId, re.newSN);
           })
           .catch(error => {
             message.error(error.message);
@@ -468,9 +471,8 @@ class OrderDialog extends React.Component {
             wrapperCol={{ span: 8 }}
             onSubmit={this.handleSubmit}
           >
-            <Form.Item>
-              {getFieldDecorator("id")(<Input type="hidden" />)}
-            </Form.Item>
+            {getFieldDecorator("id")(<Input type="hidden" />)}
+            {getFieldDecorator("sn")(<Input type="hidden" />)}
             <Form.Item label="客户名">
               {getFieldDecorator("client_name", {
                 rules: [{ required: true, message: "请输入客户名！" }]
