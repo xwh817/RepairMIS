@@ -26,7 +26,7 @@ export default class OrderManger extends React.Component {
     },
     {
       title: "订单号",
-      width: 110,
+      width: 120,
       dataIndex: "sn"
     },
     {
@@ -279,7 +279,7 @@ export default class OrderManger extends React.Component {
             onClick={() => this.showDialog()}
             style={{ float: "right", marginTop: 4 }}
           >
-            添加
+            新建
           </Button>
         </div>
         <Spin spinning={this.state.loading} size="large" delay={500}>

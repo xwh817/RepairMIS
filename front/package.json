@@ -10,11 +10,11 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "prebuild": "rm -rf ../back/templates",
-    "prebuild-win": "if exist ..\\back\\front-build (rmdir ..\\back\\front-build /q/s)",
+    "prebuild-linux": "rm -rf ../back/templates",
+    "prebuild": "if exist ..\\back\\front-build (rmdir ..\\back\\front-build /q/s)",
     "build": "react-scripts build",
-    "postbuild-win": "move build ..\\back\\front-build",
-    "postbuild": "mv build ../back/templates",
+    "postbuild": "move build ..\\back\\front-build",
+    "postbuild-linux": "mv build ../back/templates",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

@@ -111,6 +111,13 @@ class App extends Component {
       </Layout>
     );
   }
+
+  com
+
+  componentWillUnmount() {
+    console.log('页面关闭了')
+  }
+
 }
 
 export default App;
