@@ -4,24 +4,24 @@
 
 ## 功能思维导图
 
-<p><img src="./screenShot/RepairMIS.png" width="900"></p>
+<p><img src="./screenshot/RepairMIS.png" width="900"></p>
 
 ## 界面例图
 
 ### 维修项目
-<img src="./screenShot/repairItems.png">
+<img src="./screenshot/repairItems.png">
 
 ### 配件管理
-<img src="./screenShot/partList.png">
+<img src="./screenshot/partList.png">
 
 ### 配件修改
-<img src="./screenShot/partDetail.png">
+<img src="./screenshot/partDetail.png">
 
 ### 订单管理
-<img src="./screenShot/orderList.png">
+<img src="./screenshot/orderList.png">
 
 ### 添加/修改订单
-<img src="./screenShot/orderDetail.png">
+<img src="./screenshot/orderDetail.png">
 
 
 
@@ -32,8 +32,9 @@
   - redux-thunk 实现异步的action。
 - Webpack，命令行脚手架的方式进行Web项目依赖管理和编译打包
 - AntD，漂亮又好用的UI组件库，在没有设计和美工的情况下，开发风格美观的界面。
-- Python, 从踩坑到喜欢，体验其自由灵活小巧的语言风格，和传统Java严谨的差异。
+- Python, 体验其自由灵活小巧的语言风格，和传统Java严谨的差异。
 - Flask，两三行代码实现Restful API，Python下丰富的工具，拿来就用。
+- 使用Python操作Excel文件。
 - MySQL，数据库表设计，sql脚本熟悉。
 - SQLite，发现MySQL变得越来越重了，安装包就几百M，Windows下面安装更新繁琐。Python环境下面居然自带轻量级的SQLite，果断更换了。
 - CMD，命令行脚本使用，自动生成exe文件的快捷方式。
