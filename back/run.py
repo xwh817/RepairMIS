@@ -150,7 +150,7 @@ if __name__ == "__main__":
     # 当前程序运行时也会创建进程，所有要判断>1才认为已经启动
     countRunning = ProcessUtil.countRunningInWin('RepairMIS.exe')
 
-    log(countRunning)
+    #log(countRunning)
 
     # 如果进程已启动，不用重复运行; 
     if countRunning < 2:
