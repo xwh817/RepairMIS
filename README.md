@@ -1,31 +1,12 @@
 ## RepairMIS
-维修信息管理系统。
+维修订单管理系统，前端+后台全栈式开发。
 
 
 ## 功能思维导图
-
-<p><img src="./screenshot/RepairMIS.png" width="900"></p>
-
-## 界面例图
-
-### 维修项目
-<img src="./screenshot/repairItems.png">
-
-### 配件管理
-<img src="./screenshot/partList.png">
-
-### 配件修改
-<img src="./screenshot/partDetail.png">
-
-### 订单管理
-<img src="./screenshot/orderList.png">
-
-### 添加/修改订单
-<img src="./screenshot/orderDetail.png">
+<p><img src="http://xwh817.gitee.io/files/images/repair_mis/RepairMIS.png"></p>
 
 
-
-## 使用到的技术
+## 技术栈
 - VSCode开发工具，插件扩展，熟悉开发和调试
 - React,体验MVVM开发模式，基于组件、数据驱动 vs 传统jQuery手动操纵DOM的区别。
   - redux 使用store对数据流和状态进行统一管理，这里只是为了demo而使用，对于层级不深的结构，过度设计反而变得麻烦。
@@ -39,5 +20,21 @@
 - SQLite，发现MySQL变得越来越重了，安装包就几百M，Windows下面安装更新繁琐。Python环境下面居然自带轻量级的SQLite，果断更换了。
 - CMD，命令行脚本使用，自动生成exe文件的快捷方式。
 
-## 静态页面示例
-- https://xwh817.github.io/staff-manager/index.html
+
+## 界面例图
+
+### 维修项目
+<img src="http://xwh817.gitee.io/files/images/repair_mis/repairItems.png">
+
+### 配件管理
+<img src="http://xwh817.gitee.io/files/images/repair_mis/partList.png">
+
+### 配件修改
+<img src="http://xwh817.gitee.io/files/images/repair_mis/partDetail.png">
+
+### 订单管理
+<img src="http://xwh817.gitee.io/files/images/repair_mis/orderList.png">
+
+### 添加/修改订单
+<img src="http://xwh817.gitee.io/files/images/repair_mis/orderDetail.png">
+
