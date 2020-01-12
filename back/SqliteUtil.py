@@ -385,7 +385,7 @@ def addRepairItem(id, name, sid, price):
     cursor.execute(sql)
     conn.commit()   # 提交更新，不然没有保存。
 
-def getStore(id):
+def getStore(id, isJson=True):
     sql = "select * from t_store where id=%d" % id
     print(sql)
     cursor.execute(sql)
@@ -397,8 +397,11 @@ def getStore(id):
         'user': item[3], 
         'phone': item[4],
     }
-    json_str = json.dumps(store)
-    return json_str
+    if isJson:
+        json_str = json.dumps(store)
+        return json_str
+    else:
+        return store
 
 def updateStore(json_str):
     try:
