@@ -61,7 +61,20 @@ class OrderDialog extends React.Component {
 
         values.repair_items = JSON.stringify(this.state.selectedRepairItems);
         values.parts = JSON.stringify(this.state.selectedParts);
-        values.totals = JSON.stringify(this.state.totals);
+
+        // 计算好合计之后再上传
+        let totals = this.state.totals;
+        totals.forEach(item => {
+          if (item['id']===1) {
+            item['price'] = this.getItemTotalBeforeDiscount(this.state.selectedRepairItems);
+            item['discount'] = this.getItemTotalDiscount(this.state.selectedRepairItems);
+          } else if (item['id']===2) {
+            item['price'] = this.getItemTotalBeforeDiscount(this.state.selectedParts);
+            item['discount'] = this.getItemTotalDiscount(this.state.selectedParts);
+          }
+        });
+
+        values.totals = JSON.stringify(totals);
 
         console.log(JSON.stringify(values));
         HttpUtil.post(ApiUtil.API_ORDER_UPDATE, values)
@@ -546,7 +559,7 @@ class OrderDialog extends React.Component {
               </Col>
               <Col span={12}>
                 <Form.Item
-                  label="出厂编号"
+                  label="车牌号码"
                   labelCol={{ span: 6 }}
                   wrapperCol={{ span: 12 }}
                 >

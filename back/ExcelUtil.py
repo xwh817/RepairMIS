@@ -98,15 +98,11 @@ def buildExcel(id):
 def buildTitle():
     global storeInfo
     global currentRow
+    startRow = currentRow
     setTextRange('A1:H1', '%s维修清单' %(storeInfo['name']))
     mysheet['A1'].font = Font(size=18, bold=True)
-    currentRow += 1
 
-def buildClientInfo():
-    global currentRow
-    global orderInfo
-    print('orderInfo: %s' % orderInfo['create_time'])
-    startRow = currentRow
+    startRow+=1
     mysheet.merge_cells('A%d:E%d' % (startRow, startRow+1))
 
     setText('F%d' % startRow, '维修单号', setDefaultHeight=True)
@@ -120,22 +116,34 @@ def buildClientInfo():
     setCellBorder('H%d' % startRow)
     setCellBorder('H%d' % (startRow+1))
 
-    setTextRange('A%d:H%d' %(startRow+2, startRow+2), '客户信息', isBold=True)
-    setRowHeight(startRow+2, 30)
+    currentRow += 3
 
-    setText('A%d' % (startRow+3), '客户名称', setDefaultHeight=True)
-    setTextRange('B%d:D%d' %(startRow+3, startRow+3), orderInfo['client_name'], isCenter=False)
+def buildClientInfo():
+    global currentRow
+    global orderInfo
+    print('orderInfo: %s' % orderInfo['create_time'])
+    startRow = currentRow
+    
+    """ 
+    setTextRange('A%d:H%d' %(startRow, startRow), '', isBold=True)
+    setRowHeight(startRow, 30)
+    startRow+=1 
+    """
 
-    setTextRange('E%d:F%d' % (startRow+3, startRow+3), '联系人及电话')
-    setTextRange('G%d:H%d' %(startRow+3, startRow+3), orderInfo['client_user'] + '  ' + orderInfo['client_phone'], isCenter=False)
+    setText('A%d' % (startRow), '客户名称', setDefaultHeight=True)
+    setTextRange('B%d:C%d' %(startRow, startRow), orderInfo['client_name'], isCenter=False)
 
-    setText('A%d' % (startRow+4), '型号', setDefaultHeight=True)
-    setTextRange('B%d:D%d' %(startRow+4, startRow+4), orderInfo['client_phone'], isCenter=False)
+    setTextRange('D%d:E%d' % (startRow, startRow), '联系人及电话')
+    setTextRange('F%d:H%d' %(startRow, startRow), orderInfo['client_user'] + '  ' + orderInfo['client_phone'], isCenter=False)
 
-    setTextRange('E%d:F%d' % (startRow+4, startRow+4), '车牌号码')
-    setTextRange('G%d:H%d' %(startRow+4, startRow+4), orderInfo['client_sn'], isCenter=False)
+    startRow+=1
+    setText('A%d' % (startRow), '型号', setDefaultHeight=True)
+    setTextRange('B%d:C%d' %(startRow, startRow), orderInfo['client_model'], isCenter=False)
 
-    currentRow += 5
+    setTextRange('D%d:E%d' % (startRow, startRow), '车牌号码')
+    setTextRange('F%d:H%d' %(startRow, startRow), orderInfo['client_sn'], isCenter=False)
+
+    currentRow += 2
 
 
 def buildStoreInfo():
@@ -145,7 +153,7 @@ def buildStoreInfo():
 
     #print(storeInfo)
     setTextRange('A%d:A%d' %(startRow, startRow+1), '地址/电话')
-    setTextRange('B%d:H%d' %(startRow, startRow), 'Test', isCenter=False, setDefaultHeight=True)
+    setTextRange('B%d:H%d' %(startRow, startRow), storeInfo['address'], isCenter=False, setDefaultHeight=True)
     setTextRange('B%d:H%d' %(startRow+1, startRow+1), '联系人：%s    电话：%s' %(storeInfo['user'], storeInfo['phone']), isCenter=False, setDefaultHeight=True)
 
     currentRow += 2
@@ -267,6 +275,7 @@ def buildTotals():
 
 def buildFooter():
     setRowHeight(currentRow, 40)
+    setTextRange('A%d:E%d' % (currentRow,currentRow), '')
     setText('F%d' % currentRow, '客户：')
     setTextRange('G%d:H%d' % (currentRow,currentRow), '')
 

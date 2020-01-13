@@ -18,8 +18,10 @@
 - 使用Python操作Excel文件。
 - MySQL，数据库表设计，sql脚本熟悉。
 - SQLite，发现MySQL变得越来越重了，安装包就几百M，Windows下面安装更新繁琐。Python环境下面居然自带轻量级的SQLite，果断更换了。
-- CMD，命令行脚本使用，自动生成exe文件的快捷方式。
-
+- 项目编译打包
+  - 前端项目：npm run build，配置package.json文件，prebuild、postbuild脚本，实现自动打包项目并移动到指定目录。
+  - 后端项目：使用pyinstaller工具，将python运行文件包装成.exe文件，这样就不用在目标机器上安装Python运行环境了。
+  - CMD，命令行脚本使用，自动生成exe文件的快捷方式。
 
 ## 界面例图
 
@@ -37,4 +39,3 @@
 
 ### 添加/修改订单
 <img src="http://xwh817.gitee.io/files/images/repair_mis/orderDetail.png">
-
