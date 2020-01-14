@@ -2,6 +2,7 @@ import React from "react";
 
 import {
   Select,
+  Cascader,
   Table,
   Icon,
   Button,
@@ -80,11 +81,13 @@ export default class OrderManger extends React.Component {
 
   state = {
     repairItems: [],
+    parts: [],
     repairStaffs: [],
     currentItem: {},
     orderList: [],
     showInfoDialog: false,
-    loading: true
+    loading: true,
+    showMore: false
   };
 
   deviceTypes = [
@@ -102,12 +105,19 @@ export default class OrderManger extends React.Component {
     HttpUtil.get(ApiUtil.API_GET_REPAIR_ITEMS + 0)
       .then(data => {
         this.setState({
-          repairItems: data
+          repairItems: data.map(item => this.setTreeData(item, false))
+        });
+      })
+      .then(() => HttpUtil.get(ApiUtil.API_GET_PARTS + 0))
+      .then(data => {
+        data.forEach(item => this.setTreeData(item, false));
+        this.setState({
+          parts: data
         });
       })
       .then(() => HttpUtil.get(ApiUtil.API_GET_USERS + 4))
       .then(data => {
-        data = [{ id: 0, name: "" }, ...data]
+        data = [{ id: 0, name: "" }, ...data];
         this.setState({
           repairStaffs: data
         });
@@ -139,6 +149,84 @@ export default class OrderManger extends React.Component {
       });
   }
 
+  renderRepairItemsSelect() {
+    return this.state.showMore && (
+      <Cascader
+        style={{ width: 220, marginTop: 12, marginRight: 6 }}
+        placeholder="维修项目"
+        onChange={(value, selectedOptions) => {
+          let item = selectedOptions[selectedOptions.length - 1];
+          if (item) {
+            this.searchItems["repair_item"] = item.id;
+            console.log(item.name);
+          } else {
+            delete this.searchItems["repair_item"];
+          }
+        }}
+        displayRender={labels => labels[labels.length - 1]}
+        loadData={this.onLoadRepairItemData}
+        options={this.state.repairItems}
+      />
+    );
+  }
+
+  onLoadRepairItemData = selectedOptions => {
+    const targetOption = selectedOptions[selectedOptions.length - 1];
+    let id = targetOption.id;
+    targetOption.loading = true;
+    HttpUtil.get(ApiUtil.API_GET_REPAIR_ITEMS + id).then(data => {
+      data.forEach(item => this.setTreeData(item, true));
+      targetOption.loading = false;
+      targetOption.children = data;
+      this.setState({
+        repairItems: [...this.state.repairItems]
+      });
+    });
+  };
+
+  renderPartsSelect() {
+    return this.state.showMore && (
+      <Cascader
+        style={{ width: 220, marginTop: 12, marginRight: 6 }}
+        placeholder="配件材料"
+        onChange={(value, selectedOptions) => {
+          let item = selectedOptions[selectedOptions.length - 1];
+          if (item) {
+            this.searchItems["part"] = item.id;
+            console.log(item.name);
+          } else {
+            delete this.searchItems["part"];
+          }
+        }}
+        displayRender={labels => labels[labels.length - 1]}
+        loadData={this.onLoadPartData}
+        options={this.state.parts}
+      />
+    );
+  }
+
+  onLoadPartData = selectedOptions => {
+    let targetOption = selectedOptions[selectedOptions.length - 1];
+    let id = targetOption.id;
+    targetOption.loading = true;
+    HttpUtil.get(ApiUtil.API_GET_PARTS + id).then(data => {
+      targetOption.loading = false;
+      data.forEach(item => this.setTreeData(item, true));
+      targetOption.children = data;
+      this.setState({
+        parts: [...this.state.parts]
+      });
+    });
+  };
+
+  // 生成符合要求的数据
+  setTreeData(item, isLeaf) {
+    item.label = item.name;
+    item.value = item.id + "";
+    item.isLeaf = isLeaf;
+    return item;
+  }
+
   searchItems = {};
 
   handleTextChange = e => {
@@ -150,26 +238,27 @@ export default class OrderManger extends React.Component {
   };
 
   handleSelectChange = (attr, value) => {
-    if (value === '') {
+    if (value === "") {
       delete this.searchItems[attr];
     } else {
       this.searchItems[attr] = value;
     }
-    
+
     console.log(attr + ":" + value);
-  }
+  };
 
   handleDateChange = (dates, dateStrings) => {
     if (dates.length === 0) {
-      delete this.searchItems['startDate'];
-      delete this.searchItems['endDate'];
+      delete this.searchItems["startDate"];
+      delete this.searchItems["endDate"];
     } else {
-      this.searchItems['startDate'] = dates[0].startOf('day').format('YYYY-MM-DD')
-      this.searchItems['endDate'] = dates[1].endOf('day').format('YYYY-MM-DD')
+      this.searchItems["startDate"] = dates[0]
+        .startOf("day")
+        .format("YYYY-MM-DD");
+      this.searchItems["endDate"] = dates[1].endOf("day").format("YYYY-MM-DD");
     }
     console.log(JSON.stringify(this.searchItems));
   };
-
 
   handleSearch = () => {
     let where = JSON.stringify(this.searchItems);
@@ -182,7 +271,7 @@ export default class OrderManger extends React.Component {
     HttpUtil.get(url)
       .then(data => {
         if (data.length === 0) {
-          message.info('没有搜索到内容', 1);
+          message.info("没有搜索到内容", 1);
         }
         data.map((item, index) => (item.index = index + 1));
         this.setState({
@@ -229,10 +318,6 @@ export default class OrderManger extends React.Component {
             onChange={this.handleTextChange}
           />
 
-          {/* <Select placeholder="维修项目" style={styles.select} onChange={this.handleFilterChange}>
-            {this.state.repairItems.map(item => <Select.Option value={item.id} key={item.id + ''}>{item.name}</Select.Option>)}
-          </Select> */}
-
           {/* <Select
             placeholder="型号"
             style={styles.select}
@@ -254,10 +339,14 @@ export default class OrderManger extends React.Component {
           <Select
             placeholder="服务工程师"
             style={styles.select}
-            onChange={value => this.handleSelectChange('staff', value)}
+            onChange={value => this.handleSelectChange("staff", value)}
           >
             {this.state.repairStaffs.map(item => (
-              <Select.Option value={item.name} key={item.id + ""} style={{ height: 30 }}>
+              <Select.Option
+                value={item.name}
+                key={item.id + ""}
+                style={{ height: 30 }}
+              >
                 {item.name}
               </Select.Option>
             ))}
@@ -270,9 +359,22 @@ export default class OrderManger extends React.Component {
             onChange={this.handleTextChange}
           />
 
-          <Button type="primary" icon="search" onClick={this.handleSearch}>
+          {
+            this.state.showMore && <br />
+          }
+          
+          {this.renderRepairItemsSelect()}
+          {this.renderPartsSelect()}
+          <Button type="primary" icon="search" onClick={this.handleSearch} style={{ marginLeft: 4 }}>
             搜索
           </Button>
+          <Button
+            type="dashed"
+            title={this.state.showMore ? "收起": "更多"}
+            icon={this.state.showMore ? "up": "down"}
+            onClick={this.onShowMoreClick}
+            style={{ marginLeft: 4 }}
+          />
           <Button
             type="primary"
             icon="plus"
@@ -295,6 +397,14 @@ export default class OrderManger extends React.Component {
         {this.renderDialog()}
       </div>
     );
+  }
+
+  onShowMoreClick = () => {
+    if (this.state.showMore) {
+      delete this.searchItems["repair_item"];
+      delete this.searchItems["part"];
+    }
+    this.setState({showMore:!this.state.showMore})
   }
 
   showDialog = item => {

@@ -18,13 +18,9 @@ import CommonValues from "../Utils/CommonValues";
 import ArrayUtil from "../Utils/ArrayUtil";
 
 class OrderDialog extends React.Component {
-  initData() {
-    this.props.repairItems.forEach(item => this.setTreeData(item, false));
-    return this.props.repairItems;
-  }
   state = {
     confirmLoading: false,
-    repairItems: this.initData(),
+    repairItems: this.props.repairItems,
     selectedRepairItems: this.props.order.id === 0 ? [] : JSON.parse(this.props.order.repair_items),
     parts: [],
     selectedParts: this.props.order.id === 0 ? [] : JSON.parse(this.props.order.parts),
@@ -61,6 +57,8 @@ class OrderDialog extends React.Component {
 
         values.repair_items = JSON.stringify(this.state.selectedRepairItems);
         values.parts = JSON.stringify(this.state.selectedParts);
+        values.repair_item_ids = this.getIds(this.state.selectedRepairItems);
+        values.part_ids = this.getIds(this.state.selectedParts);
 
         // 计算好合计之后再上传
         let totals = this.state.totals;
@@ -95,6 +93,15 @@ class OrderDialog extends React.Component {
       }
     });
   };
+
+  // 将ids单独存储，用于按id进行查询
+  getIds = items => {
+    let ids = '#';
+    items.forEach(item => {
+      ids += (item.id + '#');
+    });
+    return ids;
+  }
 
   handleCancel = () => {
     this.props.onClose();
@@ -160,9 +167,8 @@ class OrderDialog extends React.Component {
           value={""}
           onChange={(value, selectedOptions) => {
             let item = selectedOptions[selectedOptions.length - 1];
-            item.disabled = true;
+            //item.disabled = true;
             this.setState({
-              repairItems: [...this.state.repairItems],
               selectedRepairItems: [...this.state.selectedRepairItems, item]
             });
           }}
@@ -206,9 +212,8 @@ class OrderDialog extends React.Component {
                   title="删除"
                   style={{ color: "#ee6633" }}
                   onClick={() => {
-                    item.disabled = false;
+                    //item.disabled = false;
                     this.setState({
-                      repairItems: [...this.state.repairItems],
                       selectedRepairItems: ArrayUtil.deleteItem(
                         this.state.selectedRepairItems,
                         item.id
@@ -250,9 +255,8 @@ class OrderDialog extends React.Component {
             console.log(value + "  " + JSON.stringify(item));
             item.count = 1;
             item.discount = 1;
-            item.disabled = true;
+            //item.disabled = true;
             this.setState({
-              parts: [...this.state.parts],
               selectedParts: [...this.state.selectedParts, item]
             });
           }}
@@ -342,9 +346,8 @@ class OrderDialog extends React.Component {
                   title="删除"
                   style={{ color: "#ee6633" }}
                   onClick={() => {
-                    item.disabled = false;
+                    //item.disabled = false;
                     this.setState({
-                      parts: [...this.state.parts],
                       selectedParts: ArrayUtil.deleteItem(
                         this.state.selectedParts,
                         item.id

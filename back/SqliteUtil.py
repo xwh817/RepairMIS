@@ -54,6 +54,8 @@ def createTables():
             staff VARCHAR(100),
             repair_items TEXT,
             parts TEXT,
+            repair_item_ids TEXT,
+            part_ids TEXT,
             totals INTEGER,
             create_time TIMESTAMP NOT NULL DEFAULT (datetime('now','localtime')),
             modify_time TIMESTAMP NOT NULL DEFAULT (datetime('now','localtime'))
@@ -464,15 +466,19 @@ def addOrUpdateOrder(json_str):
         staff = order.get('staff', '')
         repair_items = order.get('repair_items', '')
         parts = order.get('parts', '')
+        repair_item_ids = order.get('repair_item_ids', '')  # 为了加快搜索，这里对id进行冗余
+        part_ids = order.get('part_ids', '')
         totals = order.get('totals', '')
         result = ''
         newId = id
         sn = ''
 
+        #print(repair_item_ids, part_ids)
+
         if id == 0:  # 新增
             sn = getNewOrderSN()
-            keys = 'sn, client_name, client_model, client_user, client_phone, client_sn, staff, repair_items, parts, totals'
-            values = "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'" % (sn, client_name, client_model, client_user, client_phone, client_sn, staff, repair_items, parts, totals)
+            keys = 'sn, client_name, client_model, client_user, client_phone, client_sn, staff, repair_items, parts, repair_item_ids, part_ids, totals'
+            values = "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'" % (sn, client_name, client_model, client_user, client_phone, client_sn, staff, repair_items, parts, repair_item_ids, part_ids, totals)
             sql = "INSERT INTO t_order (%s) values (%s)" % (keys, values)
             print(sql)
             cursor.execute(sql)
@@ -480,7 +486,7 @@ def addOrUpdateOrder(json_str):
             newId = cursor.lastrowid
             print(result, "newId:", newId)
         else:   # 修改
-            update = "client_name='%s', client_model='%s', client_user='%s', client_phone='%s', client_sn='%s', staff='%s', repair_items='%s', parts='%s', totals='%s'" %(client_name, client_model, client_user, client_phone, client_sn, staff, repair_items, parts, totals)
+            update = "client_name='%s', client_model='%s', client_user='%s', client_phone='%s', client_sn='%s', staff='%s', repair_items='%s', parts='%s', repair_item_ids='%s', part_ids='%s', totals='%s'" %(client_name, client_model, client_user, client_phone, client_sn, staff, repair_items, parts, repair_item_ids, part_ids, totals)
             where = "where id=" + str(id)
             sql = "update t_order set %s %s" % (update, where)
             print(sql)
@@ -516,9 +522,11 @@ def orderAdapter(item):
             'staff': item[7],  
             'repair_items': item[8],  
             'parts': item[9],  
-            'totals': item[10],  
-            'create_time': item[11], 
-            'modify_time': item[12]
+            'repair_item_ids': item[10],  
+            'part_ids': item[11],  
+            'totals': item[12],  
+            'create_time': item[13], 
+            'modify_time': item[14]
         }
  
 def getOrders():
@@ -547,15 +555,30 @@ def getOrderById(id):
 
 def searchOrder(where):
     try:
-        sql_like = ''
         sql_where = ''
         where_items = []
 
+        # 按型号
         sn = where.get('sn', '').strip()
         if len(sn) > 0:
             sql_like = ("sn like '" + sn + "%'")
             where_items.append(sql_like)
 
+        # 按零件搜索
+        part_id = where.get('part', 0)
+        if part_id > 0:
+            where['part'] = ''
+            sql_like = ("part_ids like '%#" + str(part_id) + "#%'")
+            where_items.append(sql_like)
+
+        # 按零件搜索
+        repair_item_id = where.get('repair_item', 0)
+        if repair_item_id > 0:
+            where['repair_item'] = ''
+            sql_like = ("repair_item_ids like '%#" + str(repair_item_id) + "#%'")
+            where_items.append(sql_like)
+
+        # 按时间范围
         startDate = where.get('startDate', '')
         endDate = where.get('endDate', '')
         if len(startDate) > 0 and len(endDate) > 0:
@@ -565,6 +588,7 @@ def searchOrder(where):
             sql_between = "create_time between %s and %s" % (sql_start, sql_end)
             where_items.append(sql_between)
         
+        # 将之前已经处理过的条件清空，剩下的是相同的='%s'的条件项
         where['sn'] = ''
         where['startDate'] = ''
         where['endDate'] = ''
@@ -699,7 +723,3 @@ conn.commit()
 
 
 #getNewOrderSN()
-
-# addOrUpdateJob('{"name": "test23", "index": 8}')
-# addOrUpdateJob('{"name": "test23", "id": 8, "index": 8}')
-# getJobList()
