@@ -15,4 +15,11 @@ cd dist\run
 rename run.exe RepairMIS.exe
 mkdir excel
 
+cd ..
+mkdir temp
+move run temp\
+copy *.bat temp\
+
+rename temp 订单管理系统
+
 pause
